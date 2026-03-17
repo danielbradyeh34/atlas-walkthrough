@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ATLAS — Walkthrough</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #06060c;
+    font-family: 'Inter', sans-serif;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* ---- LAYOUT ---- */
+  .walkthrough {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 32vw 1fr;
+    position: relative;
+  }
+
+  /* ---- LEFT: EXPLANATION PANEL ---- */
+  .explain {
+    padding: 4vh 3vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 20;
+    border-right: 1px solid rgba(255,255,255,0.04);
+    background: rgba(6,6,12,0.95);
+  }
+
+  .explain-step {
+    display: none;
+    flex-direction: column;
+    gap: 2vh;
+    animation: fadeInText 0.6s ease-out;
+  }
+
+  .explain-step.active { display: flex; }
+
+  @keyframes fadeInText {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5vw;
+    padding: 0.6vh 1vw;
+    border-radius: 2vh;
+    font-size: 1.2vh;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+
+  .step-num {
+    width: 2.5vh;
+    height: 2.5vh;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2vh;
+    font-weight: 800;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .step-title {
+    font-size: 3.5vh;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .step-body {
+    font-size: 1.8vh;
+    line-height: 1.6;
+    color: #94a3b8;
+    font-weight: 400;
+  }
+
+  .step-body strong { color: #e2e8f0; font-weight: 600; }
+
+  .step-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8vh;
+    margin-top: 0.5vh;
+  }
+
+  .step-detail {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6vw;
+    font-size: 1.4vh;
+    color: #cbd5e1;
+    line-height: 1.4;
+  }
+
+  .step-detail-icon {
+    font-size: 1.6vh;
+    flex-shrink: 0;
+    margin-top: 0.1vh;
+  }
+
+  /* ---- NAVIGATION ---- */
+  .nav {
+    position: absolute;
+    bottom: 3vh;
+    left: 3vw;
+    right: 3vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 25;
+  }
+
+  .nav-hint {
+    font-size: 1.2vh;
+    color: #475569;
+    letter-spacing: 1px;
+  }
+
+  .nav-dots {
+    display: flex;
+    gap: 0.5vw;
+  }
+
+  .nav-dot {
+    width: 0.8vh;
+    height: 0.8vh;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+
+  .nav-dot.active {
+    background: #818cf8;
+    box-shadow: 0 0 8px rgba(99,102,241,0.5);
+    width: 2vw;
+    border-radius: 0.4vh;
+  }
+
+  .nav-dot.done { background: rgba(99,102,241,0.3); }
+
+  .nav-counter {
+    font-size: 1.2vh;
+    color: #475569;
+    font-weight: 600;
+  }
+
+  /* ---- RIGHT: VISUAL ---- */
+  .visual {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Each visual stage */
+  .vis-stage {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    pointer-events: none;
+  }
+
+  .vis-stage.visible { opacity: 1; }
+  .vis-stage.dimmed { opacity: 0.2; }
+
+  /* ---- STAGE 0: TITLE ---- */
+  .vis-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 0 4vw;
+  }
+
+  .atlas-name {
+    font-size: 7vh;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    margin-bottom: 1.5vh;
+  }
+
+  .atlas-full {
+    font-size: 2vh;
+    color: #64748b;
+    font-weight: 400;
+    letter-spacing: 2px;
+  }
+
+  .atlas-sub {
+    font-size: 1.6vh;
+    color: #334155;
+    margin-top: 3vh;
+    max-width: 40vw;
+    line-height: 1.6;
+  }
+
+  /* ---- STAGE VISUALS (simplified cards) ---- */
+  .stage-visual {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+  }
+
+  .sv-card {
+    background: rgba(10,10,18,0.9);
+    border-radius: 1.5vh;
+    padding: 2.5vh 2vw;
+    border: 1px solid;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: cardIn 0.5s ease-out forwards;
+  }
+
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .sv-title { font-size: 2.4vh; font-weight: 700; margin-bottom: 0.8vh; }
+  .sv-sub { font-size: 1.4vh; color: #94a3b8; margin-bottom: 1.5vh; }
+
+  .sv-list { list-style: none; display: flex; flex-direction: column; gap: 0.8vh; }
+
+  .sv-list li {
+    display: flex; align-items: center; gap: 0.8vw;
+    padding: 1.2vh 1vw; border-radius: 0.8vh;
+    font-size: 1.6vh; font-weight: 500; color: #e2e8f0;
+  }
+
+  .sv-num {
+    width: 3vh; height: 3vh; border-radius: 0.6vh;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2vh; font-weight: 700; flex-shrink: 0;
+  }
+
+  /* Signal cards grid */
+  .sig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2vh 1vw;
+  }
+
+  .sig-mini {
+    display: flex; align-items: center; gap: 0.8vw;
+    padding: 1.6vh 1.2vw;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(59,130,246,0.12);
+    border-radius: 1.2vh;
+    opacity: 0;
+    animation: cardIn 0.4s ease-out forwards;
+  }
+
+  .sig-mini:nth-child(1) { animation-delay: 0.1s; }
+  .sig-mini:nth-child(2) { animation-delay: 0.15s; }
+  .sig-mini:nth-child(3) { animation-delay: 0.2s; }
+  .sig-mini:nth-child(4) { animation-delay: 0.25s; }
+  .sig-mini:nth-child(5) { animation-delay: 0.3s; }
+  .sig-mini:nth-child(6) { animation-delay: 0.35s; }
+  .sig-mini:nth-child(7) { animation-delay: 0.4s; }
+  .sig-mini:nth-child(8) { animation-delay: 0.45s; }
+  .sig-mini:nth-child(9) { animation-delay: 0.5s; }
+  .sig-mini:nth-child(10) { animation-delay: 0.55s; }
+  .sig-mini:nth-child(11) { animation-delay: 0.6s; }
+
+  .sig-mini-icon {
+    width: 4.5vh; height: 4.5vh; border-radius: 1vh;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2vh; flex-shrink: 0;
+  }
+  .sig-mini-icon.h { background: rgba(239,68,68,0.12); }
+  .sig-mini-icon.w { background: rgba(251,191,36,0.12); }
+  .sig-mini-icon.c { background: rgba(100,116,139,0.08); }
+
+  .sig-mini-name { font-size: 1.6vh; font-weight: 600; color: #e2e8f0; }
+  .sig-mini-type { font-size: 1vh; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .sig-mini-type.h { color: #f87171; }
+  .sig-mini-type.w { color: #fbbf24; }
+  .sig-mini-type.c { color: #64748b; }
+
+  /* Counter big */
+  .big-counter {
+    text-align: center;
+    margin-bottom: 2vh;
+  }
+
+  .big-counter .bc-num {
+    font-size: 5vh;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .big-counter .bc-label {
+    font-size: 1.2vh;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-top: 0.5vh;
+  }
+
+  /* Gate pillar visual */
+  .gate-visual {
+    width: 3vw;
+    border-radius: 1.5vw;
+    position: absolute;
+    overflow: hidden;
+  }
+
+  .gate-visual::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1.5vw;
+  }
+
+  /* SDR capacity card */
+  .sdr-visual {
+    background: rgba(10,10,18,0.9);
+    border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 1.2vh;
+    padding: 1.5vh 1.2vw;
+  }
+
+  .sdr-v-header { display: flex; align-items: center; gap: 0.6vw; margin-bottom: 1vh; }
+
+  .sdr-v-avatar {
+    width: 3.5vh; height: 3.5vh; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3vh; font-weight: 700;
+  }
+
+  .sdr-v-name { font-size: 1.4vh; font-weight: 600; }
+  .sdr-v-seg { font-size: 0.9vh; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a78bfa; }
+
+  .sdr-v-bar { width: 100%; height: 0.8vh; background: rgba(255,255,255,0.06); border-radius: 0.4vh; overflow: hidden; margin: 0.5vh 0; }
+  .sdr-v-fill { height: 100%; border-radius: 0.4vh; }
+
+  .sdr-v-stats { display: flex; justify-content: space-between; font-size: 1vh; color: #64748b; margin-top: 0.5vh; }
+  .sdr-v-stats span { color: #e2e8f0; font-weight: 700; }
+
+  .sdr-v-status {
+    margin-top: 0.8vh;
+    padding: 0.5vh 0.6vw;
+    border-radius: 0.5vh;
+    font-size: 1vh;
+    font-weight: 600;
+  }
+
+  /* Feedback visual */
+  .fb-visual {
+    background: rgba(6,6,12,0.94);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 1.5vh;
+    padding: 2vh 1.5vw;
+  }
+
+  .fb-v-title { font-size: 1.6vh; font-weight: 700; color: #818cf8; margin-bottom: 1vh; }
+
+  .fb-v-items { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8vh 0.8vw; }
+
+  .fb-v-item {
+    padding: 1.2vh 0.8vw;
+    background: rgba(99,102,241,0.04);
+    border: 1px solid rgba(99,102,241,0.1);
+    border-radius: 1vh;
+    text-align: center;
+  }
+
+  .fb-v-item .fvi-icon { font-size: 2.2vh; margin-bottom: 0.4vh; display: block; }
+  .fb-v-item .fvi-title { font-size: 1.1vh; font-weight: 600; color: #e2e8f0; }
+  .fb-v-item .fvi-desc { font-size: 0.9vh; color: #64748b; margin-top: 0.2vh; }
+
+  /* Color themes per stage */
+  .theme-blue .step-badge { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  .theme-blue .step-title { color: #60a5fa; }
+
+  .theme-yellow .step-badge { background: rgba(245,158,11,0.12); color: #fbbf24; }
+  .theme-yellow .step-title { color: #fbbf24; }
+  .theme-yellow .sv-card { border-color: rgba(245,158,11,0.2); }
+  .theme-yellow li { background: rgba(245,158,11,0.04); }
+  .theme-yellow .sv-num { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+  .theme-green .step-badge { background: rgba(16,185,129,0.12); color: #34d399; }
+  .theme-green .step-title { color: #34d399; }
+  .theme-green .sv-card { border-color: rgba(16,185,129,0.2); }
+  .theme-green li { background: rgba(16,185,129,0.04); }
+  .theme-green .sv-num { background: rgba(16,185,129,0.15); color: #34d399; }
+
+  .theme-pink .step-badge { background: rgba(236,72,153,0.12); color: #f472b6; }
+  .theme-pink .step-title { color: #f472b6; }
+  .theme-pink .sv-card { border-color: rgba(236,72,153,0.2); }
+
+  .theme-purple .step-badge { background: rgba(139,92,246,0.12); color: #a78bfa; }
+  .theme-purple .step-title { color: #a78bfa; }
+
+  .theme-indigo .step-badge { background: rgba(99,102,241,0.12); color: #818cf8; }
+  .theme-indigo .step-title { color: #818cf8; }
+
+  /* ---- GAUGE ANIMATION ---- */
+  @keyframes gaugeIn {
+    from { stroke-dasharray: 0 264; }
+  }
+
+  /* ---- STAR FIELD ---- */
+  #starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="walkthrough" onclick="nextStep()" onkeydown="handleKey(event)">
+
+  <!-- LEFT: EXPLANATION -->
+  <div class="explain">
+
+    <!-- Step 0: Intro -->
+    <div class="explain-step active" data-step="0">
+      <div class="step-title" style="color: #fff; font-size: 4.5vh;">
+        Meet <span style="background: linear-gradient(135deg, #a5b4fc, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ATLAS</span>
+      </div>
+      <div class="step-body">
+        A self-sustaining system that <strong>sources, enriches, allocates, and sequences leads</strong> for our outbound SDR team, with zero manual list building.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.5vh;">
+        Click anywhere or press the right arrow key to walk through each stage of the system.
+      </div>
+    </div>
+
+    <!-- Step 1: Signal Sources -->
+    <div class="explain-step theme-blue" data-step="1">
+      <div class="step-badge"><span class="step-num">1</span> Signal Sources</div>
+      <div class="step-title">Where it all starts</div>
+      <div class="step-body">
+        Instead of manually pulling lists from ZoomInfo and hoping for the best, ATLAS <strong>continuously monitors 11 signal sources</strong> for buying intent and prospecting triggers.
+      </div>
+      <div class="step-body">
+        Hot signals like <strong>pricing page visits, 6sense intent data, and former EH admins</strong> who moved to new companies get prioritised. Warm signals like job changes and hiring surges indicate timing. Cold sources fill the pipeline with volume.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh;">
+        The goal: never miss a moment when someone is actively looking for an HR and payroll platform.
+      </div>
+    </div>
+
+    <!-- Step 2: Enrichment Engine -->
+    <div class="explain-step theme-yellow" data-step="2">
+      <div class="step-badge"><span class="step-num">2</span> Enrichment Engine</div>
+      <div class="step-title">Filter, enrich, and score</div>
+      <div class="step-body">
+        Raw signals are messy. The Enrichment Engine runs every lead through an <strong>8-step qualification process</strong> before anything reaches an SDR.
+      </div>
+      <div class="step-body">
+        It deduplicates, checks for <strong>existing customers and do-not-contact lists</strong>, then cascades through ZoomInfo, Cognism, and Lusha to fill in missing data. Every email gets verified. Every lead gets a <strong>personalised score</strong> based on our custom model.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh;">
+        2,147 raw signals go in. 814 enriched, qualified leads come out. The rest are filtered, non-ICP, or non-compliant.
+      </div>
+    </div>
+
+    <!-- Step 3: Allocation Engine -->
+    <div class="explain-step theme-green" data-step="3">
+      <div class="step-badge"><span class="step-num">3</span> Allocation Engine</div>
+      <div class="step-title">The brain that decides</div>
+      <div class="step-body">
+        This is where intelligence meets distribution. The Allocation Engine looks at every qualified lead and decides <strong>which SDR should get it, and why</strong>.
+      </div>
+      <div class="step-body">
+        It checks <strong>territory rules</strong> (Core: 10-150 employees, Mid-Market: 151-1500), enforces <strong>ROE compliance</strong>, balances workload via round-robin, and ranks by opportunity score. Most importantly, it builds a <strong>signal context card</strong> explaining exactly why we're reaching out to this person.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh;">
+        SDRs don't just get a name and number. They get the story.
+      </div>
+    </div>
+
+    <!-- Step 4: Sequencing Engine -->
+    <div class="explain-step theme-pink" data-step="4">
+      <div class="step-badge"><span class="step-num">4</span> Sequencing Engine</div>
+      <div class="step-title">Auto-enrolled, ready to go</div>
+      <div class="step-body">
+        Once allocated, leads are <strong>automatically enrolled into multi-channel outreach sequences</strong>. When an SDR logs in, their calls are already loaded and their emails are already queued.
+      </div>
+      <div class="step-body">
+        The sequence runs across <strong>email, phone, and LinkedIn</strong> over 10 days. The first email is AI-generated, referencing the specific signal that triggered the outreach. An <strong>AI Reply Handler</strong> runs 24/7, classifying responses and auto-booking meetings when prospects say yes.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh;">
+        The SDR's job becomes executing, not sourcing.
+      </div>
+    </div>
+
+    <!-- Step 5: Pipeline Engine -->
+    <div class="explain-step theme-purple" data-step="5">
+      <div class="step-badge"><span class="step-num">5</span> Pipeline Engine</div>
+      <div class="step-title">On-demand capacity</div>
+      <div class="step-body">
+        Each SDR has a <strong>target contact count</strong> (e.g., 200/month). When they need more leads, they hit <strong>Request Top-Up</strong> and the Pipeline Engine delivers a fresh batch from the qualified pool.
+      </div>
+      <div class="step-body">
+        The system <strong>validates every request</strong> before releasing leads — checking active sequences, conversion rate, and whether existing contacts have been properly worked. No gaming. No churn-and-refresh. When a meeting is booked, the lead is <strong>handed off to an AE</strong>.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh;">
+        SDRs stay in control. The system stays honest.
+      </div>
+    </div>
+
+    <!-- Step 6: Feedback Loop -->
+    <div class="explain-step theme-indigo" data-step="6">
+      <div class="step-badge"><span class="step-num">6</span> Feedback Loop</div>
+      <div class="step-title">The system that learns</div>
+      <div class="step-body">
+        What makes ATLAS a <strong>system, not just a pipeline</strong>, is the feedback loop. Every outcome feeds back into the machine to make it smarter.
+      </div>
+      <div class="step-details" style="display:grid; grid-template-columns: 2vh auto 1fr; gap: 0.6vh 0.6vw; align-items:baseline;">
+        <span class="step-detail-icon">&#9889;</span> <strong style="white-space:nowrap;">Auto Top-Up</strong> <span style="color:#cbd5e1;">SDR dips below threshold? Pipeline auto-replenishes.</span>
+        <span class="step-detail-icon">&#9200;</span> <strong style="white-space:nowrap;">Stale Rotation</strong> <span style="color:#cbd5e1;">No engagement? Remove, free capacity for fresh leads.</span>
+        <span class="step-detail-icon">&#9851;</span> <strong style="white-space:nowrap;">6-Month Recycle</strong> <span style="color:#cbd5e1;">Non-converts cool off, then re-enter as warm signals.</span>
+        <span class="step-detail-icon">&#128279;</span> <strong style="white-space:nowrap;">Signal Attribution</strong> <span style="color:#cbd5e1;">Which signal actually closed? Reweight the scoring model.</span>
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh; margin-top: 1vh;">
+        Over time, the system converges on the signals and sequences that actually produce revenue.
+      </div>
+    </div>
+
+    <!-- Step 7: Full System -->
+    <div class="explain-step theme-indigo" data-step="7">
+      <div class="step-badge"><span class="step-num">&#10003;</span> Full System</div>
+      <div class="step-title">The complete picture</div>
+      <div class="step-body">
+        This is <strong>ATLAS end-to-end</strong>. Signals flow in from 11 sources, get filtered and enriched, allocated to the right SDR, auto-sequenced across channels, and managed by a self-sustaining pipeline engine.
+      </div>
+      <div class="step-body">
+        The feedback loop closes the circle: <strong>every outcome teaches the system</strong> which signals, sequences, and allocations actually produce revenue. The machine gets smarter every week.
+      </div>
+      <div class="step-body" style="color: #475569; font-size: 1.4vh;">
+        Zero manual list building. Zero lead complaints. Just qualified, scored, sequenced contacts landing in your SDRs' queues every day.
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav">
+      <div class="nav-hint">Click or press &rarr; to continue</div>
+      <div class="nav-dots">
+        <div class="nav-dot active" data-dot="0"></div>
+        <div class="nav-dot" data-dot="1"></div>
+        <div class="nav-dot" data-dot="2"></div>
+        <div class="nav-dot" data-dot="3"></div>
+        <div class="nav-dot" data-dot="4"></div>
+        <div class="nav-dot" data-dot="5"></div>
+        <div class="nav-dot" data-dot="6"></div>
+        <div class="nav-dot" data-dot="7"></div>
+      </div>
+      <div class="nav-counter"><span id="stepCurrent">1</span> / 8</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: VISUAL -->
+  <div class="visual">
+
+    <!-- Step 0: Title -->
+    <div class="vis-stage visible" data-vis="0">
+      <div class="vis-title">
+        <div class="atlas-name">ATLAS</div>
+        <div class="atlas-full">Autonomous Targeting, Lead Allocation & Sequencing</div>
+        <div class="atlas-sub">A self-sustaining lead engine for Employment Hero's outbound team. No manual list building. No lead complaints. Just qualified, scored, sequenced contacts landing in your SDRs' queues every day.</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Signals -->
+    <div class="vis-stage" data-vis="1">
+      <div style="padding: 4vh 3vw; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <div class="big-counter">
+          <div class="bc-num" style="color: #60a5fa;">2,147</div>
+          <div class="bc-label">Raw Signals / Month</div>
+        </div>
+        <div class="sig-grid">
+          <div class="sig-mini"><div class="sig-mini-icon h">🔥</div><div><div class="sig-mini-name">Website Visitors</div><div class="sig-mini-type h">Hot Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon h">🎯</div><div><div class="sig-mini-name">6sense Intent</div><div class="sig-mini-type h">Hot Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon h">🔁</div><div><div class="sig-mini-name">EH Terminated Admins</div><div class="sig-mini-type h">Hot Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon h">⭐</div><div><div class="sig-mini-name">G2 / Capterra Intent</div><div class="sig-mini-type h">Hot Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon w">🔄</div><div><div class="sig-mini-name">Job Changes</div><div class="sig-mini-type w">Warm Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon w">📰</div><div><div class="sig-mini-name">News & Hiring</div><div class="sig-mini-type w">Warm Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon w">👥</div><div><div class="sig-mini-name">HR Hiring Surges</div><div class="sig-mini-type w">Warm Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon w">⚡</div><div><div class="sig-mini-name">Salesforce Signals</div><div class="sig-mini-type w">Warm Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon w">🔧</div><div><div class="sig-mini-name">Tech Stack Changes</div><div class="sig-mini-type w">Warm Signal</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon c">🔍</div><div><div class="sig-mini-name">ZoomInfo</div><div class="sig-mini-type c">Cold Source</div></div></div>
+          <div class="sig-mini"><div class="sig-mini-icon c">💼</div><div><div class="sig-mini-name">LinkedIn Sales Nav</div><div class="sig-mini-type c">Cold Source</div></div></div>
+          <div class="sig-mini" style="border-style:dashed; border-color:rgba(99,102,241,0.2); background:rgba(99,102,241,0.03);"><div class="sig-mini-icon" style="background:rgba(99,102,241,0.08);"><span style="font-size:2vh; color:#818cf8;">+</span></div><div><div class="sig-mini-name" style="color:#818cf8;">More sources</div><div style="font-size:0.9vh; color:#475569;">Extensible by design</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Enrichment -->
+    <div class="vis-stage" data-vis="2">
+      <div style="padding: 4vh 3vw; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <div class="big-counter">
+          <div class="bc-num" style="color: #fbbf24;">2,147 &rarr; 814</div>
+          <div class="bc-label">Enriched & Qualified</div>
+        </div>
+        <div style="font-size: 1.5vh; color: #94a3b8; margin-bottom: 1.5vh;">8-step qualification pipeline</div>
+        <ul class="sv-list theme-yellow">
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">1</span> Deduplicate & Cleanse</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">2</span> Existing Customer Check</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">3</span> Do Not Contact Check</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">4</span> Waterfall Enrich: ZoomInfo → Cognism → Lusha</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">5</span> ICP Fit (industry, size, region, persona)</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">6</span> Email Verification (ZeroBounce)</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">7</span> Spam Act / GDPR Compliance Check</li>
+          <li><span class="sv-num" style="background:rgba(245,158,11,0.15); color:#fbbf24;">8</span> Personalised Lead Score (custom model)</li>
+        </ul>
+        <div style="text-align: center; margin-top: 2vh; color: #ef4444; font-size: 1.3vh; font-weight: 600;">
+          🚫 1,333 filtered out — Not ICP / DNC / Non-compliant
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Allocation -->
+    <div class="vis-stage" data-vis="3">
+      <div style="padding: 4vh 3vw; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <div class="big-counter">
+          <div class="bc-num" style="color: #34d399;">814 &rarr; 387</div>
+          <div class="bc-label">Allocated to SDRs</div>
+        </div>
+        <div style="font-size: 1.5vh; color: #94a3b8; margin-bottom: 1.5vh;">Intelligent lead-to-SDR matching</div>
+        <ul class="sv-list theme-green">
+          <li><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">🗺️</span> Territory: Core (10-150) or Mid-Market (151-1500)</li>
+          <li><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">⚖️</span> ROE compliance</li>
+          <li><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">🔄</span> Round-robin balancing</li>
+          <li><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">📊</span> Opportunity score (lead score + signal strength)</li>
+          <li><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">🧠</span> SDR capacity & workload awareness</li>
+          <li><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">📝</span> Signal context card (why we're reaching out)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Step 4: Sequencing -->
+    <div class="vis-stage" data-vis="4">
+      <div style="padding: 4vh 3vw; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <div class="big-counter">
+          <div class="bc-num" style="color: #f472b6;">387</div>
+          <div class="bc-label">Auto-Sequenced</div>
+        </div>
+        <div style="font-size: 1.5vh; color: #94a3b8; margin-bottom: 1.5vh;">Multi-channel cadence with AI reply handling</div>
+        <ul class="sv-list">
+          <li style="background: rgba(236,72,153,0.06);"><span class="sv-num" style="background:rgba(236,72,153,0.15); color:#f472b6;">📧</span> <strong>Day 1</strong> — Signal-Aware Email</li>
+          <li style="background: rgba(236,72,153,0.06);"><span class="sv-num" style="background:rgba(236,72,153,0.15); color:#f472b6;">📞</span> <strong>Day 2</strong> — Discovery Call with context card</li>
+          <li style="background: rgba(236,72,153,0.04);"><span class="sv-num" style="background:rgba(236,72,153,0.1); color:#f472b6;">💬</span> <strong>Day 4</strong> — LinkedIn Touch</li>
+          <li style="background: rgba(236,72,153,0.04);"><span class="sv-num" style="background:rgba(236,72,153,0.1); color:#f472b6;">📧</span> <strong>Day 7</strong> — Follow-Up Email</li>
+          <li style="background: rgba(236,72,153,0.04);"><span class="sv-num" style="background:rgba(236,72,153,0.1); color:#f472b6;">📞</span> <strong>Day 10</strong> — Final Call</li>
+          <li style="background: rgba(16,185,129,0.06); border-top: 1px solid rgba(16,185,129,0.15); margin-top: 0.5vh; padding-top: 1vh;"><span class="sv-num" style="background:rgba(16,185,129,0.15); color:#34d399;">🤖</span> <strong style="color:#34d399;">24/7</strong> — AI Reply Handler (classify, respond, book)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Step 5: Pipeline -->
+    <div class="vis-stage" data-vis="5">
+      <div style="padding: 2.5vh 2vw; display: flex; flex-direction: column; justify-content: center; gap: 1vh; height: 100%;">
+        <div class="big-counter" style="margin-bottom: 0;">
+          <div class="bc-num" style="color: #a78bfa;">418</div>
+          <div class="bc-label">Active Contacts Across All SDRs</div>
+        </div>
+
+        <!-- SDR Dashboard Cards with Gauges -->
+        <div style="display: flex; gap: 0.8vw; opacity:0; animation: cardIn 0.5s 0.1s ease-out forwards;">
+
+          <!-- Jordan Taylor — Healthy -->
+          <div style="flex:1; background: rgba(10,10,18,0.9); border: 1px solid rgba(139,92,246,0.2); border-radius: 1.5vh; padding: 1.8vh 1vw; display: flex; flex-direction: column; align-items: center; gap: 0.8vh;">
+            <div style="display:flex; align-items:center; gap:0.5vw; width:100%;">
+              <div style="width:3.5vh; height:3.5vh; border-radius:50%; background:rgba(239,68,68,0.12); color:#f87171; display:flex; align-items:center; justify-content:center; font-size:1.2vh; font-weight:700;">JT</div>
+              <div><div style="font-size:1.3vh; font-weight:600; color:#e2e8f0;">Jordan Taylor</div><div style="font-size:0.85vh; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#a78bfa;">Core — Sydney</div></div>
+            </div>
+            <!-- Circular Gauge -->
+            <div style="position:relative; width:14vh; height:14vh;">
+              <svg viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#gaugeGreen)" stroke-width="7" stroke-linecap="round" stroke-dasharray="187.5 264" style="animation: gaugeIn 1s 0.3s ease-out both;"/>
+              </svg>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="font-size:3.2vh; font-weight:800; color:#34d399;">71%</div>
+                <div style="font-size:0.9vh; color:#64748b; font-weight:600;">142 / 200</div>
+              </div>
+            </div>
+            <!-- Validation Metrics -->
+            <div style="width:100%; display:flex; flex-direction:column; gap:0.4vh;">
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Sequencing</span><span style="color:#60a5fa; font-weight:700;">38</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Meetings booked</span><span style="color:#34d399; font-weight:700;">7</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Conversion rate</span><span style="color:#34d399; font-weight:700;">4.9%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Contacts worked</span><span style="color:#e2e8f0; font-weight:700;">92%</span>
+              </div>
+            </div>
+            <!-- Recent Activity -->
+            <div style="width:100%; display:flex; flex-direction:column; gap:0.3vh;">
+              <div style="font-size:0.8vh; font-weight:700; color:#475569; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.2vh;">Recent Activity</div>
+              <div style="display:flex; align-items:center; gap:0.3vw; font-size:0.9vh; color:#94a3b8; padding:0.3vh 0;">
+                <span style="color:#34d399;">✓</span> Meeting booked — Nexon HR
+              </div>
+              <div style="display:flex; align-items:center; gap:0.3vw; font-size:0.9vh; color:#94a3b8; padding:0.3vh 0;">
+                <span style="color:#60a5fa;">📧</span> Email sent — Buildcorp
+              </div>
+              <div style="display:flex; align-items:center; gap:0.3vw; font-size:0.9vh; color:#94a3b8; padding:0.3vh 0;">
+                <span style="color:#fbbf24;">📞</span> Call completed — TalentHQ
+              </div>
+            </div>
+            <!-- Button: Available -->
+            <div style="width:100%; padding:0.8vh; border-radius:0.8vh; text-align:center; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); color:#a78bfa; font-size:1.05vh; font-weight:700; letter-spacing:0.5px;">
+              REQUEST TOP-UP
+            </div>
+          </div>
+
+          <!-- Morgan Lee — Animated Top-Up Flow -->
+          <div id="ml-card" style="flex:1; background: rgba(10,10,18,0.9); border: 1px solid rgba(139,92,246,0.2); border-radius: 1.5vh; padding: 1.8vh 1vw; display: flex; flex-direction: column; align-items: center; gap: 0.8vh; position:relative; overflow:hidden;">
+            <div style="display:flex; align-items:center; gap:0.5vw; width:100%;">
+              <div style="width:3.5vh; height:3.5vh; border-radius:50%; background:rgba(251,191,36,0.12); color:#fbbf24; display:flex; align-items:center; justify-content:center; font-size:1.2vh; font-weight:700;">ML</div>
+              <div><div style="font-size:1.3vh; font-weight:600; color:#e2e8f0;">Morgan Lee</div><div style="font-size:0.85vh; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#a78bfa;">Core — Melbourne</div></div>
+            </div>
+            <!-- Circular Gauge — animated -->
+            <div style="position:relative; width:14vh; height:14vh;">
+              <svg viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+                <circle id="ml-gauge" cx="50" cy="50" r="42" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="116.2 264"/>
+              </svg>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div id="ml-pct" style="font-size:3.2vh; font-weight:800;">44%</div>
+                <div id="ml-count" style="font-size:0.9vh; color:#64748b; font-weight:600;">87 / 200</div>
+              </div>
+            </div>
+            <!-- Validation Metrics -->
+            <div style="width:100%; display:flex; flex-direction:column; gap:0.4vh;">
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Sequencing</span><span style="color:#60a5fa; font-weight:700;">22</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Meetings booked</span><span style="color:#34d399; font-weight:700;">4</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Conversion rate</span><span style="color:#fbbf24; font-weight:700;">4.6%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Contacts worked</span><span style="color:#e2e8f0; font-weight:700;">88%</span>
+              </div>
+            </div>
+            <!-- Validation checks — hidden initially -->
+            <div id="ml-validation" style="width:100%; border:1px solid rgba(245,158,11,0.15); border-radius:0.6vh; padding:0.6vh 0.5vw; background:rgba(245,158,11,0.04); opacity:0; max-height:0; overflow:hidden; transition: all 0.4s ease;">
+              <div style="font-size:0.8vh; font-weight:700; color:#fbbf24; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:0.4vh;">System Validation</div>
+              <div id="ml-v1" style="display:flex; align-items:center; gap:0.3vw; font-size:0.85vh; color:#34d399; padding:0.2vh 0; opacity:0; transition: opacity 0.3s;"><span>✓</span> Conversion rate above 3%</div>
+              <div id="ml-v2" style="display:flex; align-items:center; gap:0.3vw; font-size:0.85vh; color:#34d399; padding:0.2vh 0; opacity:0; transition: opacity 0.3s;"><span>✓</span> 88% contacts worked</div>
+              <div id="ml-v3" style="display:flex; align-items:center; gap:0.3vw; font-size:0.85vh; color:#34d399; padding:0.2vh 0; opacity:0; transition: opacity 0.3s;"><span>✓</span> No churn pattern detected</div>
+            </div>
+            <!-- Button -->
+            <div id="ml-btn" style="width:100%; padding:0.8vh; border-radius:0.8vh; text-align:center; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); color:#a78bfa; font-size:1.05vh; font-weight:700; letter-spacing:0.5px; transition: all 0.3s;">
+              REQUEST TOP-UP
+            </div>
+            <!-- Animated cursor -->
+            <div id="ml-cursor" style="position:absolute; width:2.5vh; height:2.5vh; opacity:0; z-index:10; pointer-events:none; transition: all 0.6s cubic-bezier(0.4,0,0.2,1);">
+              <svg viewBox="0 0 24 24" fill="white" style="width:100%; height:100%; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+                <path d="M5 3l14 8-6 2-4 6z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Sam Kim — Full -->
+          <div style="flex:1; background: rgba(10,10,18,0.9); border: 1px solid rgba(16,185,129,0.2); border-radius: 1.5vh; padding: 1.8vh 1vw; display: flex; flex-direction: column; align-items: center; gap: 0.8vh;">
+            <div style="display:flex; align-items:center; gap:0.5vw; width:100%;">
+              <div style="width:3.5vh; height:3.5vh; border-radius:50%; background:rgba(139,92,246,0.12); color:#a78bfa; display:flex; align-items:center; justify-content:center; font-size:1.2vh; font-weight:700;">SK</div>
+              <div><div style="font-size:1.3vh; font-weight:600; color:#e2e8f0;">Sam Kim</div><div style="font-size:0.85vh; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#a78bfa;">Mid-Market — Auckland</div></div>
+            </div>
+            <!-- Circular Gauge -->
+            <div style="position:relative; width:14vh; height:14vh;">
+              <svg viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#gaugeFull)" stroke-width="7" stroke-linecap="round" stroke-dasharray="250.8 264" style="animation: gaugeIn 1s 0.7s ease-out both;"/>
+              </svg>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="font-size:3.2vh; font-weight:800; color:#34d399;">95%</div>
+                <div style="font-size:0.9vh; color:#64748b; font-weight:600;">189 / 200</div>
+              </div>
+            </div>
+            <!-- Validation Metrics -->
+            <div style="width:100%; display:flex; flex-direction:column; gap:0.4vh;">
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Sequencing</span><span style="color:#60a5fa; font-weight:700;">52</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Meetings booked</span><span style="color:#34d399; font-weight:700;">11</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Conversion rate</span><span style="color:#34d399; font-weight:700;">5.8%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.95vh; color:#64748b; padding:0.4vh 0.4vw; background:rgba(255,255,255,0.02); border-radius:0.4vh;">
+                <span>Contacts worked</span><span style="color:#e2e8f0; font-weight:700;">96%</span>
+              </div>
+            </div>
+            <!-- Recent Activity -->
+            <div style="width:100%; display:flex; flex-direction:column; gap:0.3vh;">
+              <div style="font-size:0.8vh; font-weight:700; color:#475569; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.2vh;">Recent Activity</div>
+              <div style="display:flex; align-items:center; gap:0.3vw; font-size:0.9vh; color:#94a3b8; padding:0.3vh 0;">
+                <span style="color:#34d399;">✓</span> Meeting booked — ScaleUp Co
+              </div>
+              <div style="display:flex; align-items:center; gap:0.3vw; font-size:0.9vh; color:#94a3b8; padding:0.3vh 0;">
+                <span style="color:#34d399;">✓</span> Meeting booked — Aptive Group
+              </div>
+              <div style="display:flex; align-items:center; gap:0.3vw; font-size:0.9vh; color:#94a3b8; padding:0.3vh 0;">
+                <span style="color:#60a5fa;">📧</span> Reply received — CloudPay
+              </div>
+            </div>
+            <!-- Button: Disabled -->
+            <div style="width:100%; padding:0.8vh; border-radius:0.8vh; text-align:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); color:#475569; font-size:1.05vh; font-weight:700; letter-spacing:0.5px;">
+              FULL CAPACITY
+            </div>
+          </div>
+
+        </div>
+
+        <!-- AE Handoff -->
+        <div style="text-align:center; padding:0.8vh; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.15); border-radius:0.8vh; opacity:0; animation: cardIn 0.4s 0.7s ease-out forwards;">
+          <span style="font-size:1.4vh; font-weight:700; color:#34d399;">🤝 MEETING BOOKED → AE HANDOFF</span>
+        </div>
+      </div>
+
+      <!-- SVG gradient definitions for gauges -->
+      <svg style="position:absolute; width:0; height:0;">
+        <defs>
+          <linearGradient id="gaugeGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#fbbf24"/>
+          </linearGradient>
+          <linearGradient id="gaugeRed" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ef4444"/>
+            <stop offset="100%" stop-color="#fbbf24"/>
+          </linearGradient>
+          <linearGradient id="gaugeFull" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#34d399"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Step 6: Feedback -->
+    <div class="vis-stage" data-vis="6">
+      <div style="padding: 4vh 5vw; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <div style="text-align:center; margin-bottom: 2vh;">
+          <div style="font-size: 1.2vh; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #818cf8;">← Learn · Refine · Recycle →</div>
+        </div>
+        <div style="background: rgba(6,6,12,0.94); border: 1px solid rgba(99,102,241,0.25); border-radius: 1.5vh; padding: 2vh 1.8vw; max-width: 52vw;">
+          <div style="font-size: 1.8vh; font-weight: 700; color: #818cf8; margin-bottom: 1.5vh;">🔁 Feedback Loop — Self-Improving Closed-Loop System</div>
+          <div style="display: flex; flex-direction: column; gap: 0.8vh;">
+            <div style="display:flex; align-items:center; gap:1vw; padding:1.4vh 1.2vw; background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.1); border-radius:1vh; opacity:0; animation: cardIn 0.4s 0.1s ease-out forwards;">
+              <span style="font-size:2.8vh; flex-shrink:0;">⚡</span>
+              <div>
+                <div style="font-size:1.4vh; font-weight:700; color:#e2e8f0;">Auto Top-Up</div>
+                <div style="font-size:1.1vh; color:#94a3b8; margin-top:0.2vh; line-height:1.4;">SDR requests more leads. System validates, then delivers a fresh batch from the qualified pool.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:1vw; padding:1.4vh 1.2vw; background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.1); border-radius:1vh; opacity:0; animation: cardIn 0.4s 0.25s ease-out forwards;">
+              <span style="font-size:2.8vh; flex-shrink:0;">⏰</span>
+              <div>
+                <div style="font-size:1.4vh; font-weight:700; color:#e2e8f0;">Stale Rotation</div>
+                <div style="font-size:1.1vh; color:#94a3b8; margin-top:0.2vh; line-height:1.4;">No engagement after the full sequence? Remove the contact, free up capacity for fresh leads.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:1vw; padding:1.4vh 1.2vw; background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.1); border-radius:1vh; opacity:0; animation: cardIn 0.4s 0.4s ease-out forwards;">
+              <span style="font-size:2.8vh; flex-shrink:0;">♻️</span>
+              <div>
+                <div style="font-size:1.4vh; font-weight:700; color:#e2e8f0;">6-Month Recycle</div>
+                <div style="font-size:1.1vh; color:#94a3b8; margin-top:0.2vh; line-height:1.4;">Non-converts cool off for six months, then re-enter the system as warm signals with fresh context.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:1vw; padding:1.4vh 1.2vw; background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.1); border-radius:1vh; opacity:0; animation: cardIn 0.4s 0.55s ease-out forwards;">
+              <span style="font-size:2.8vh; flex-shrink:0;">🔗</span>
+              <div>
+                <div style="font-size:1.4vh; font-weight:700; color:#e2e8f0;">Signal → Deal Attribution</div>
+                <div style="font-size:1.1vh; color:#94a3b8; margin-top:0.2vh; line-height:1.4;">Which signal actually closed the deal? Feed it back into the scoring model to reweight priorities.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top: 2vh; opacity:0; animation: cardIn 0.4s 0.7s ease-out forwards;">
+          <div style="font-size: 1.3vh; color: #475569; max-width: 38vw; margin: 0 auto; line-height: 1.6;">
+            The system gets smarter with every lead worked, every deal closed, and every signal tracked. This is what makes ATLAS <strong style="color:#818cf8;">self-sustaining</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7: Full System View (animated pipeline) -->
+    <div class="vis-stage" data-vis="7">
+      <iframe src="animated-pipeline.html" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentStep = 0;
+  const totalSteps = 8;
+
+  function nextStep() {
+    if (currentStep < totalSteps - 1) {
+      currentStep++;
+      updateView();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 0) {
+      currentStep--;
+      updateView();
+    }
+  }
+
+  function updateView() {
+    // Update explanations
+    document.querySelectorAll('.explain-step').forEach(el => el.classList.remove('active'));
+    const activeExplain = document.querySelector(`[data-step="${currentStep}"]`);
+    if (activeExplain) activeExplain.classList.add('active');
+
+    // Update visuals
+    document.querySelectorAll('.vis-stage').forEach(el => {
+      el.classList.remove('visible', 'dimmed');
+    });
+    const activeVis = document.querySelector(`[data-vis="${currentStep}"]`);
+    if (activeVis) activeVis.classList.add('visible');
+
+    // Update nav dots
+    document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (i === currentStep) dot.classList.add('active');
+      else if (i < currentStep) dot.classList.add('done');
+    });
+
+    // Update counter
+    document.getElementById('stepCurrent').textContent = currentStep + 1;
+  }
+
+  function handleKey(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
+  }
+
+  document.addEventListener('keydown', handleKey);
+
+  // Reuse topup animation
+  const style = document.createElement('style');
+  style.textContent = `@keyframes topupPulse { 0%,100% { border-color: rgba(245,158,11,0.2); } 50% { border-color: rgba(245,158,11,0.5); box-shadow: 0 0 12px rgba(245,158,11,0.1); } }`;
+  document.head.appendChild(style);
+
+  // ---- STAR FIELD ----
+  (function() {
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let w, h, stars = [];
+    const COUNT = 120;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+
+    function init() {
+      resize();
+      stars = [];
+      for (let i = 0; i < COUNT; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.2 + 0.3,
+          alpha: Math.random() * 0.4 + 0.1,
+          drift: (Math.random() - 0.5) * 0.15,
+          twinkleSpeed: Math.random() * 0.008 + 0.003,
+          twinkleOffset: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    function draw(t) {
+      ctx.clearRect(0, 0, w, h);
+      for (const s of stars) {
+        s.y += s.drift;
+        s.x += s.drift * 0.3;
+        if (s.y < -5) s.y = h + 5;
+        if (s.y > h + 5) s.y = -5;
+        if (s.x < -5) s.x = w + 5;
+        if (s.x > w + 5) s.x = -5;
+        const flicker = s.alpha + Math.sin(t * s.twinkleSpeed + s.twinkleOffset) * 0.15;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180,190,220,${Math.max(0.05, flicker)})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    init();
+    requestAnimationFrame(draw);
+  })();
+
+  // ---- MORGAN LEE TOP-UP ANIMATION ----
+  (function() {
+    const gauge = document.getElementById('ml-gauge');
+    const pct = document.getElementById('ml-pct');
+    const count = document.getElementById('ml-count');
+    const btn = document.getElementById('ml-btn');
+    const card = document.getElementById('ml-card');
+    const cursor = document.getElementById('ml-cursor');
+    const validation = document.getElementById('ml-validation');
+    const v1 = document.getElementById('ml-v1');
+    const v2 = document.getElementById('ml-v2');
+    const v3 = document.getElementById('ml-v3');
+    if (!gauge) return;
+
+    const CYCLE = 12000; // 12s total cycle
+    // dasharray: 44% = 116.2, 87% = 229.7, circumference = 264
+    let running = false;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function resetState() {
+      gauge.setAttribute('stroke-dasharray', '116.2 264');
+      gauge.setAttribute('stroke', '#ef4444');
+      pct.textContent = '44%';
+      pct.style.color = '#f87171';
+      count.textContent = '87 / 200';
+      btn.textContent = 'REQUEST TOP-UP';
+      btn.style.background = 'rgba(139,92,246,0.08)';
+      btn.style.borderColor = 'rgba(139,92,246,0.2)';
+      btn.style.color = '#a78bfa';
+      card.style.borderColor = 'rgba(139,92,246,0.2)';
+      cursor.style.opacity = '0';
+      validation.style.opacity = '0';
+      validation.style.maxHeight = '0';
+      v1.style.opacity = '0';
+      v2.style.opacity = '0';
+      v3.style.opacity = '0';
+    }
+
+    function runCycle() {
+      resetState();
+      const start = performance.now();
+
+      function tick(now) {
+        const elapsed = now - start;
+        const phase = elapsed / CYCLE;
+
+        // Phase 1 (0-2s): Idle at 44%, cursor appears and moves to button
+        if (elapsed > 1200 && elapsed < 2200) {
+          cursor.style.opacity = '1';
+          const t = (elapsed - 1200) / 1000;
+          cursor.style.bottom = `${1 + (1 - t) * 8}vh`;
+          cursor.style.right = `${2 + (1 - t) * 3}vw`;
+        }
+
+        // Phase 2 (2.2s): Click effect — button press
+        if (elapsed >= 2200 && elapsed < 2400) {
+          btn.style.transform = 'scale(0.96)';
+          btn.style.background = 'rgba(139,92,246,0.2)';
+        }
+
+        // Phase 3 (2.4s): Button changes to "Validating..."
+        if (elapsed >= 2400 && elapsed < 3000) {
+          btn.style.transform = 'scale(1)';
+          btn.textContent = 'VALIDATING...';
+          btn.style.background = 'rgba(245,158,11,0.08)';
+          btn.style.borderColor = 'rgba(245,158,11,0.2)';
+          btn.style.color = '#fbbf24';
+          cursor.style.opacity = '0';
+        }
+
+        // Phase 4 (3s): Show validation panel
+        if (elapsed >= 3000 && elapsed < 3200) {
+          validation.style.opacity = '1';
+          validation.style.maxHeight = '12vh';
+        }
+
+        // Validation checks appear one by one
+        if (elapsed >= 3200) v1.style.opacity = '1';
+        if (elapsed >= 3600) v2.style.opacity = '1';
+        if (elapsed >= 4000) v3.style.opacity = '1';
+
+        // Phase 5 (4.5s): Approved
+        if (elapsed >= 4500 && elapsed < 4600) {
+          btn.textContent = '⚡ APPROVED — 87 leads incoming';
+          btn.style.background = 'rgba(245,158,11,0.15)';
+          btn.style.borderColor = 'rgba(245,158,11,0.4)';
+          card.style.borderColor = 'rgba(245,158,11,0.3)';
+        }
+
+        // Phase 6 (5-8s): Gauge animates from 44% to 87%
+        if (elapsed >= 5000 && elapsed < 8000) {
+          const gt = easeOut((elapsed - 5000) / 3000);
+          const da = lerp(116.2, 229.7, gt);
+          const pctVal = Math.round(lerp(44, 87, gt));
+          const countVal = Math.round(lerp(87, 174, gt));
+          gauge.setAttribute('stroke-dasharray', `${da} 264`);
+          gauge.setAttribute('stroke', pctVal > 65 ? '#34d399' : pctVal > 50 ? '#fbbf24' : '#ef4444');
+          pct.textContent = pctVal + '%';
+          pct.style.color = pctVal > 65 ? '#34d399' : pctVal > 50 ? '#fbbf24' : '#f87171';
+          count.textContent = countVal + ' / 200';
+        }
+
+        // Phase 7 (8-9s): Show completed state
+        if (elapsed >= 8000 && elapsed < 9000) {
+          btn.textContent = '✅ TOP-UP COMPLETE';
+          btn.style.background = 'rgba(16,185,129,0.12)';
+          btn.style.borderColor = 'rgba(16,185,129,0.3)';
+          btn.style.color = '#34d399';
+          card.style.borderColor = 'rgba(16,185,129,0.2)';
+        }
+
+        // Phase 8 (10s+): Fade out validation, reset
+        if (elapsed >= 10000 && elapsed < 10500) {
+          validation.style.opacity = '0';
+          validation.style.maxHeight = '0';
+        }
+
+        if (elapsed < CYCLE) {
+          requestAnimationFrame(tick);
+        } else {
+          setTimeout(runCycle, 500);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Only run when slide 5 is visible
+    const observer = new MutationObserver(() => {
+      const vis = document.querySelector('[data-vis="5"]');
+      if (vis && vis.classList.contains('visible')) {
+        if (!running) { running = true; runCycle(); }
+      } else {
+        running = false;
+        resetState();
+      }
+    });
+    document.querySelectorAll('.vis-stage').forEach(el => {
+      observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+  })();
+</script>
+
+</body>
+</html>
