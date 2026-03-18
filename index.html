@@ -1119,8 +1119,9 @@
     if (!gauge) return;
 
     const CYCLE = 13000; // 13s total cycle
-    // dasharray: 44% = 116.2, 87% = 229.7, circumference = 264
     let running = false;
+    let cycleTimer = null;
+    let animFrame = null;
 
     function lerp(a, b, t) { return a + (b - a) * t; }
     function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
@@ -1266,23 +1267,33 @@
           if (elapsed >= 9000) setPhase(11);
           if (elapsed >= 11000) setPhase(12);
 
+          if (!running) return;
           if (elapsed < CYCLE) {
-            requestAnimationFrame(tick);
+            animFrame = requestAnimationFrame(tick);
           } else {
-            setTimeout(runCycle, 800);
+            cycleTimer = setTimeout(runCycle, 800);
           }
         }
-        requestAnimationFrame(tick);
+        animFrame = requestAnimationFrame(tick);
     }
 
-    // Only run when slide 5 is visible
+    function stopCycle() {
+      running = false;
+      if (cycleTimer) { clearTimeout(cycleTimer); cycleTimer = null; }
+      if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+      resetState();
+    }
+
+    // Start fresh when entering slide 5, stop completely when leaving
     const observer = new MutationObserver(() => {
       const vis = document.querySelector('[data-vis="5"]');
       if (vis && vis.classList.contains('visible')) {
-        if (!running) { running = true; runCycle(); }
-      } else {
-        running = false;
-        resetState();
+        if (!running) {
+          running = true;
+          runCycle();
+        }
+      } else if (running) {
+        stopCycle();
       }
     });
     document.querySelectorAll('.vis-stage').forEach(el => {
