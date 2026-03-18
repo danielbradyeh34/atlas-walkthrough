@@ -1141,28 +1141,33 @@
 
     function runCycle() {
       resetState();
-      const start = performance.now();
+      let phase = -1;
 
-      function tick(now) {
-        const elapsed = now - start;
-        const phase = elapsed / CYCLE;
+      // Use CSS transitions for the cursor movement instead of per-frame updates
+      cursor.style.transition = 'none';
+      cursor.style.bottom = '9vh';
+      cursor.style.right = '5vw';
 
-        // Phase 1 (0-2s): Idle at 44%, cursor appears and moves to button
-        if (elapsed > 1200 && elapsed < 2200) {
+      function setPhase(p) {
+        if (phase >= p) return;
+        phase = p;
+
+        if (p === 1) {
+          // Cursor appears and glides to button via CSS transition
           cursor.style.opacity = '1';
-          const t = (elapsed - 1200) / 1000;
-          cursor.style.bottom = `${1 + (1 - t) * 8}vh`;
-          cursor.style.right = `${2 + (1 - t) * 3}vw`;
+          cursor.style.transition = 'bottom 1s cubic-bezier(0.4,0,0.2,1), right 1s cubic-bezier(0.4,0,0.2,1)';
+          // Trigger reflow then set target
+          void cursor.offsetWidth;
+          cursor.style.bottom = '1.5vh';
+          cursor.style.right = '2vw';
         }
-
-        // Phase 2 (2.2s): Click effect — button press
-        if (elapsed >= 2200 && elapsed < 2400) {
+        else if (p === 2) {
+          // Click — button press
           btn.style.transform = 'scale(0.96)';
           btn.style.background = 'rgba(139,92,246,0.2)';
         }
-
-        // Phase 3 (2.4s): Button changes to "Validating..."
-        if (elapsed >= 2400 && elapsed < 3000) {
+        else if (p === 3) {
+          // Validating
           btn.style.transform = 'scale(1)';
           btn.textContent = 'VALIDATING...';
           btn.style.background = 'rgba(245,158,11,0.08)';
@@ -1170,27 +1175,51 @@
           btn.style.color = '#fbbf24';
           cursor.style.opacity = '0';
         }
-
-        // Phase 4 (3s): Show validation panel
-        if (elapsed >= 3000 && elapsed < 3200) {
+        else if (p === 4) {
+          // Show validation panel
           validation.style.opacity = '1';
           validation.style.maxHeight = '12vh';
         }
-
-        // Validation checks appear one by one
-        if (elapsed >= 3200) v1.style.opacity = '1';
-        if (elapsed >= 3600) v2.style.opacity = '1';
-        if (elapsed >= 4000) v3.style.opacity = '1';
-
-        // Phase 5 (4.5s): Approved
-        if (elapsed >= 4500 && elapsed < 4600) {
+        else if (p === 5) { v1.style.opacity = '1'; }
+        else if (p === 6) { v2.style.opacity = '1'; }
+        else if (p === 7) { v3.style.opacity = '1'; }
+        else if (p === 8) {
+          // Approved
           btn.textContent = '⚡ APPROVED — 87 leads incoming';
           btn.style.background = 'rgba(245,158,11,0.15)';
           btn.style.borderColor = 'rgba(245,158,11,0.4)';
           card.style.borderColor = 'rgba(245,158,11,0.3)';
         }
+        else if (p === 10) {
+          // Complete
+          btn.textContent = '✅ TOP-UP COMPLETE';
+          btn.style.background = 'rgba(168,210,48,0.12)';
+          btn.style.borderColor = 'rgba(168,210,48,0.3)';
+          btn.style.color = '#c5e847';
+          card.style.borderColor = 'rgba(168,210,48,0.2)';
+        }
+        else if (p === 11) {
+          // Fade out validation
+          validation.style.opacity = '0';
+          validation.style.maxHeight = '0';
+        }
+      }
 
-        // Phase 6 (5-8s): Gauge animates from 44% to 87%
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+
+        // Phase triggers at specific times
+        if (elapsed >= 1200) setPhase(1);
+        if (elapsed >= 2200) setPhase(2);
+        if (elapsed >= 2400) setPhase(3);
+        if (elapsed >= 3000) setPhase(4);
+        if (elapsed >= 3300) setPhase(5);
+        if (elapsed >= 3700) setPhase(6);
+        if (elapsed >= 4100) setPhase(7);
+        if (elapsed >= 4500) setPhase(8);
+
+        // Gauge animation (this one needs per-frame updates for smooth fill)
         if (elapsed >= 5000 && elapsed < 8000) {
           const gt = easeOut((elapsed - 5000) / 3000);
           const da = lerp(116.2, 229.7, gt);
@@ -1203,20 +1232,8 @@
           count.textContent = countVal + ' / 200';
         }
 
-        // Phase 7 (8-9s): Show completed state
-        if (elapsed >= 8000 && elapsed < 9000) {
-          btn.textContent = '✅ TOP-UP COMPLETE';
-          btn.style.background = 'rgba(168,210,48,0.12)';
-          btn.style.borderColor = 'rgba(168,210,48,0.3)';
-          btn.style.color = '#c5e847';
-          card.style.borderColor = 'rgba(168,210,48,0.2)';
-        }
-
-        // Phase 8 (10s+): Fade out validation, reset
-        if (elapsed >= 10000 && elapsed < 10500) {
-          validation.style.opacity = '0';
-          validation.style.maxHeight = '0';
-        }
+        if (elapsed >= 8000) setPhase(10);
+        if (elapsed >= 10000) setPhase(11);
 
         if (elapsed < CYCLE) {
           requestAnimationFrame(tick);
