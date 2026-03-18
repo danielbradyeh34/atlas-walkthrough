@@ -1143,23 +1143,36 @@
       resetState();
       let phase = -1;
 
-      // Use CSS transitions for the cursor movement instead of per-frame updates
+      // Position cursor using the button's actual location
       cursor.style.transition = 'none';
-      cursor.style.bottom = '9vh';
-      cursor.style.right = '5vw';
+      cursor.style.bottom = '';
+      cursor.style.right = '';
+      cursor.style.left = '';
+      cursor.style.top = '';
+
+      // Calculate button center relative to card
+      const btnRect = btn.getBoundingClientRect();
+      const cardRect = card.getBoundingClientRect();
+      const btnCenterX = btnRect.left - cardRect.left + btnRect.width * 0.55;
+      const btnCenterY = btnRect.top - cardRect.top + btnRect.height * 0.5;
+      // Start position: above and to the right of button
+      const startX = btnCenterX + 40;
+      const startY = btnCenterY - 80;
+
+      cursor.style.left = startX + 'px';
+      cursor.style.top = startY + 'px';
 
       function setPhase(p) {
         if (phase >= p) return;
         phase = p;
 
         if (p === 1) {
-          // Cursor appears and glides to button via CSS transition
+          // Cursor appears and glides to button center via CSS transition
           cursor.style.opacity = '1';
-          cursor.style.transition = 'bottom 1s cubic-bezier(0.4,0,0.2,1), right 1s cubic-bezier(0.4,0,0.2,1)';
-          // Trigger reflow then set target
+          cursor.style.transition = 'left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1)';
           void cursor.offsetWidth;
-          cursor.style.bottom = '1.5vh';
-          cursor.style.right = '2vw';
+          cursor.style.left = btnCenterX + 'px';
+          cursor.style.top = btnCenterY + 'px';
         }
         else if (p === 2) {
           // Click — button press
