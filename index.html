@@ -609,7 +609,10 @@
 
     <!-- Navigation -->
     <div class="nav">
-      <div class="nav-hint">Click or press &rarr; to continue</div>
+      <div style="display:flex; align-items:center; gap:0.6vw;">
+        <div onclick="event.stopPropagation(); prevStep();" style="width:3.2vh; height:3.2vh; border-radius:50%; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:#64748b; font-size:1.4vh; transition: all 0.2s;" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)';this.style.color='#a78bfa';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#64748b';">&#9664;</div>
+        <div onclick="event.stopPropagation(); nextStep();" style="width:3.2vh; height:3.2vh; border-radius:50%; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:#64748b; font-size:1.4vh; transition: all 0.2s;" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)';this.style.color='#a78bfa';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#64748b';">&#9654;</div>
+      </div>
       <div class="nav-dots">
         <div class="nav-dot active" data-dot="0"></div>
         <div class="nav-dot" data-dot="1"></div>
