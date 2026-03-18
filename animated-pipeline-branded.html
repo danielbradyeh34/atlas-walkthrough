@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Autonomous Prospecting Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #0a0320;
+    font-family: 'Inter', sans-serif;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    color: #fff;
+  }
+
+  /* ---- STAR FIELD ---- */
+  #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  /* ---- ZONE BACKGROUNDS (hidden) ---- */
+  .zone { display: none; }
+
+  /* ---- AMBIENT (hidden) ---- */
+  .bg-glow { display: none; }
+
+  /* ---- HEADER ---- */
+  .header { position: absolute; top: 0.6vh; left: 0; right: 0; text-align: center; z-index: 21; }
+  .header h1 {
+    font-size: 1.6vh;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .header p { font-size: 0.7vh; color: #475569; margin-top: 0.15vh; letter-spacing: 1px; line-height: 1; }
+
+  /* ---- STAGE LABELS (on gate pillars) ---- */
+  .gate-label-text {
+    position: absolute;
+    z-index: 14;
+    font-size: 1.4vh;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+  .gl-1 { left: calc(15% + 0.3vw); top: 30%; color: #fbbf24; }
+  .gl-2 { left: calc(36% + 0.3vw); top: 30%; color: #c5e847; }
+  .gl-3 { left: calc(57% + 0.3vw); top: 30%; color: #f472b6; }
+  .gl-4 { left: calc(79% + 0.3vw); top: 30%; color: #a78bfa; }
+
+  /* ---- COUNTERS ---- */
+  .counters {
+    position: absolute;
+    top: 1.5vh;
+    left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    padding: 0;
+  }
+  .counter {
+    text-align: center;
+    opacity: 0;
+    animation: countUp 0.5s ease-out forwards;
+  }
+  /* Position each counter at the center of its zone */
+  .cnt-1 { width: 15%; animation-delay: 0.3s; }
+  .cnt-2 { width: 21%; animation-delay: 1s; }
+  .cnt-3 { width: 21%; animation-delay: 1.7s; }
+  .cnt-4 { width: 22%; animation-delay: 2.4s; }
+  .cnt-5 { width: 21%; animation-delay: 3.1s; }
+  .counter .c-num { font-size: 2vh; font-weight: 800; line-height: 1; }
+  .counter .c-label { font-size: 0.7vh; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #475569; margin-top: 0.2vh; }
+  .counter .c-sublabel { font-size: 0.75vh; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: 0.1vh; }
+
+  @keyframes countUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .cnt-1 .c-num, .cnt-1 .c-sublabel { color: #60a5fa; }
+  .cnt-2 .c-num, .cnt-2 .c-sublabel { color: #fbbf24; }
+  .cnt-3 .c-num, .cnt-3 .c-sublabel { color: #c5e847; }
+  .cnt-4 .c-num, .cnt-4 .c-sublabel { color: #f472b6; }
+  .cnt-5 .c-num, .cnt-5 .c-sublabel { color: #a78bfa; }
+
+  /* ---- SIGNAL CARDS ---- */
+  .signals-col {
+    position: absolute;
+    left: 1%;
+    top: 10vh;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8vh;
+  }
+
+  .sig-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5vw;
+    padding: 1vh 0.6vw;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(59,130,246,0.12);
+    border-radius: 1vh;
+    width: 11vw;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideInLeft 0.4s ease-out forwards;
+  }
+  .sig-card:nth-child(1) { animation-delay: 0.05s; }
+  .sig-card:nth-child(2) { animation-delay: 0.1s; }
+  .sig-card:nth-child(3) { animation-delay: 0.15s; }
+  .sig-card:nth-child(4) { animation-delay: 0.2s; }
+  .sig-card:nth-child(5) { animation-delay: 0.25s; }
+  .sig-card:nth-child(6) { animation-delay: 0.3s; }
+  .sig-card:nth-child(7) { animation-delay: 0.35s; }
+  .sig-card:nth-child(8) { animation-delay: 0.4s; }
+  .sig-card:nth-child(9) { animation-delay: 0.45s; }
+  .sig-card:nth-child(10) { animation-delay: 0.5s; }
+  .sig-card:nth-child(11) { animation-delay: 0.55s; }
+
+  @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
+
+  .sig-icon {
+    width: 3.2vh; height: 3.2vh; border-radius: 0.8vh;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6vh; flex-shrink: 0;
+  }
+  .sig-icon.hot { background: rgba(239,68,68,0.12); }
+  .sig-icon.warm { background: rgba(251,191,36,0.12); }
+  .sig-icon.cold { background: rgba(100,116,139,0.1); }
+  .sc-name { font-size: 1.2vh; font-weight: 600; color: #e2e8f0; }
+  .sc-type { font-size: 0.85vh; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-top: 0.1vh; }
+  .sc-type.hot { color: #f87171; }
+  .sc-type.warm { color: #fbbf24; }
+  .sc-type.cold { color: #64748b; }
+
+  /* ---- GATE PILLARS ---- */
+  .gate {
+    position: absolute;
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .gate-pillar {
+    width: 1.8vw;
+    border-radius: 0.9vw;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gate-pillar::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: calc(0.9vw - 3px);
+    background: rgba(10,3,32,0.5);
+    z-index: 1;
+  }
+
+  .gate-pillar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.9vw;
+    z-index: 2;
+  }
+
+  .gate-glow {
+    position: absolute;
+    width: 5vw;
+    top: 0; bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: blur(35px);
+    opacity: 0.25;
+    z-index: -1;
+    border-radius: 2.5vw;
+  }
+
+  .gate-1 { left: 15%; top: 8.5vh; }
+  .gate-1 .gate-pillar { height: 60vh; background: linear-gradient(180deg, rgba(245,158,11,0.5), rgba(245,158,11,0.12)); }
+  .gate-1 .gate-pillar::after { background: linear-gradient(180deg, transparent, rgba(245,158,11,0.3), transparent); animation: gateFlow 2s linear infinite; }
+  .gate-1 .gate-glow { background: rgba(245,158,11,0.2); }
+
+  .gate-2 { left: 36%; top: 8.5vh; }
+  .gate-2 .gate-pillar { height: 60vh; background: linear-gradient(180deg, rgba(168,210,48,0.5), rgba(168,210,48,0.12)); }
+  .gate-2 .gate-pillar::after { background: linear-gradient(180deg, transparent, rgba(168,210,48,0.3), transparent); animation: gateFlow 2s linear infinite 0.4s; }
+  .gate-2 .gate-glow { background: rgba(168,210,48,0.2); }
+
+  .gate-3 { left: 57%; top: 8.5vh; }
+  .gate-3 .gate-pillar { height: 60vh; background: linear-gradient(180deg, rgba(236,72,153,0.5), rgba(236,72,153,0.12)); }
+  .gate-3 .gate-pillar::after { background: linear-gradient(180deg, transparent, rgba(236,72,153,0.3), transparent); animation: gateFlow 2s linear infinite 0.8s; }
+  .gate-3 .gate-glow { background: rgba(236,72,153,0.2); }
+
+  .gate-4 { left: 79%; top: 8.5vh; }
+  .gate-4 .gate-pillar { height: 60vh; background: linear-gradient(180deg, rgba(139,92,246,0.5), rgba(139,92,246,0.12)); }
+  .gate-4 .gate-pillar::after { background: linear-gradient(180deg, transparent, rgba(139,92,246,0.3), transparent); animation: gateFlow 2s linear infinite 1.2s; }
+  .gate-4 .gate-glow { background: rgba(139,92,246,0.2); }
+
+  @keyframes gateFlow { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+
+  /* ---- INFO PANELS ---- */
+  .info-panel { position: absolute; z-index: 11; width: 17vw; }
+
+  .ip-card {
+    background: rgba(20,8,45,0.88);
+    border-radius: 1.4vh;
+    padding: 1.8vh 1.2vw;
+    backdrop-filter: blur(14px);
+    border: 1px solid;
+  }
+
+  .ip-title { font-size: 1.5vh; font-weight: 700; margin-bottom: 0.3vh; }
+  .ip-sub { font-size: 1vh; color: #94a3b8; margin-bottom: 1.4vh; }
+
+  .ip-list { list-style: none; display: flex; flex-direction: column; gap: 0.5vh; }
+
+  .ip-list li {
+    display: flex; align-items: center; gap: 0.5vw;
+    padding: 0.8vh 0.6vw; border-radius: 0.8vh;
+    font-size: 1.1vh; font-weight: 500; color: #e2e8f0;
+  }
+
+  .ip-num {
+    width: 2.2vh; height: 2.2vh; border-radius: 0.5vh;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1vh; font-weight: 700; flex-shrink: 0;
+  }
+
+  .panel-sieve { left: 16.5%; top: 10vh; }
+  .panel-sieve .ip-card { border-color: rgba(245,158,11,0.2); }
+  .panel-sieve .ip-title { color: #fbbf24; }
+  .panel-sieve li { background: rgba(245,158,11,0.04); }
+  .panel-sieve .ip-num { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+  .panel-brain { left: 37.5%; top: 10vh; }
+  .panel-brain .ip-card { border-color: rgba(168,210,48,0.2); }
+  .panel-brain .ip-title { color: #c5e847; }
+  .panel-brain li { background: rgba(168,210,48,0.04); }
+  .panel-brain .ip-num { background: rgba(168,210,48,0.15); color: #c5e847; }
+
+  /* ---- OUTREACH SEQUENCE ---- */
+  .seq-panel { position: absolute; left: 58.5%; top: 9.5vh; width: 19vw; z-index: 11; }
+
+  .seq-card {
+    background: rgba(20,8,45,0.88);
+    border: 1px solid rgba(236,72,153,0.2);
+    border-radius: 1.4vh;
+    padding: 1.8vh 1.2vw;
+    backdrop-filter: blur(14px);
+  }
+
+  .seq-title { font-size: 1.5vh; font-weight: 700; color: #f472b6; margin-bottom: 0.2vh; }
+  .seq-sub { font-size: 1vh; color: #94a3b8; margin-bottom: 1.6vh; }
+
+  .seq-timeline { position: relative; padding-left: 1.6vw; }
+
+  .seq-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.55vw;
+    top: 0.8vh; bottom: 0.8vh;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(236,72,153,0.5), rgba(236,72,153,0.1));
+  }
+
+  .seq-flow-dot {
+    position: absolute;
+    left: 0.38vw;
+    width: 0.9vh; height: 0.9vh;
+    border-radius: 50%;
+    background: #ec4899;
+    box-shadow: 0 0 12px rgba(236,72,153,0.7), 0 0 24px rgba(236,72,153,0.3);
+    z-index: 3;
+    animation: seqDotFlow 5s ease-in-out infinite;
+  }
+
+  @keyframes seqDotFlow { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 88% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
+
+  .seq-step {
+    position: relative;
+    padding: 0.8vh 0 0.8vh 0.8vw;
+    display: flex; align-items: center; gap: 0.5vw;
+  }
+
+  .seq-step::before {
+    content: '';
+    position: absolute;
+    left: -1.25vw;
+    top: 50%; transform: translateY(-50%);
+    width: 1.1vh; height: 1.1vh;
+    border-radius: 50%;
+    border: 2px solid rgba(236,72,153,0.4);
+    background: #0a0320;
+    z-index: 2;
+  }
+
+  .seq-step.active::before {
+    background: #ec4899;
+    border-color: #ec4899;
+    box-shadow: 0 0 8px rgba(236,72,153,0.5);
+  }
+
+  .seq-step-icon { font-size: 1.6vh; flex-shrink: 0; }
+  .seq-step-title { font-size: 1.1vh; font-weight: 600; color: #e2e8f0; }
+  .seq-step-detail { font-size: 0.85vh; color: #64748b; margin-top: 0.1vh; }
+  .seq-step-timing {
+    font-size: 0.85vh; font-weight: 700; color: #f472b6;
+    background: rgba(236,72,153,0.1); padding: 0.2vh 0.4vw; border-radius: 0.4vh;
+    flex-shrink: 0; margin-left: auto;
+  }
+
+  .seq-contacts { margin-top: 1.4vh; padding-top: 1.2vh; border-top: 1px solid rgba(236,72,153,0.1); }
+
+  .seq-contact {
+    display: flex; align-items: center; gap: 0.4vw;
+    padding: 0.7vh 0.5vw; margin-bottom: 0.5vh;
+    background: rgba(236,72,153,0.03); border-radius: 0.7vh;
+    border-left: 2px solid transparent;
+    animation: contactPulse 3s ease-in-out infinite;
+  }
+  .seq-contact:nth-child(2) { animation-delay: 1s; }
+  .seq-contact:nth-child(3) { animation-delay: 2s; }
+
+  @keyframes contactPulse { 0%, 100% { border-left-color: transparent; } 50% { border-left-color: rgba(236,72,153,0.4); } }
+
+  .scr-avatar {
+    width: 2.4vh; height: 2.4vh; border-radius: 50%;
+    font-size: 0.85vh; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .scr-name { font-size: 1vh; font-weight: 600; color: #e2e8f0; }
+  .scr-status { font-size: 0.8vh; color: #64748b; }
+  .scr-badge {
+    font-size: 0.8vh; font-weight: 700; padding: 0.2vh 0.4vw; border-radius: 0.4vh;
+    flex-shrink: 0; margin-left: auto;
+  }
+  .scr-badge.email { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  .scr-badge.call { background: rgba(168,210,48,0.12); color: #c5e847; }
+  .scr-badge.linkedin { background: rgba(139,92,246,0.12); color: #a78bfa; }
+
+  /* ---- SDR CARDS ---- */
+  .sdr-col {
+    position: absolute;
+    left: 80.5%;
+    right: 1%;
+    top: 10vh;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+  }
+
+  .sdr-card {
+    width: 100%;
+    background: rgba(20,8,45,0.88);
+    border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 1.2vh;
+    padding: 1.2vh 0.6vw;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transform: translateX(20px);
+    animation: slideInRight 0.4s ease-out forwards;
+  }
+  .sdr-card:nth-child(1) { animation-delay: 2s; }
+  .sdr-card:nth-child(2) { animation-delay: 2.3s; }
+  .sdr-card:nth-child(3) { animation-delay: 2.6s; }
+
+  @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
+
+  .sdr-header { display: flex; align-items: center; gap: 0.4vw; margin-bottom: 1vh; }
+  .sdr-avatar {
+    width: 3vh; height: 3vh; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2vh; font-weight: 700; flex-shrink: 0;
+  }
+  .sdr-name { font-size: 1.2vh; font-weight: 600; }
+  .sdr-segment { font-size: 0.8vh; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a78bfa; }
+
+  .sdr-contacts { display: flex; flex-direction: column; gap: 0.4vh; }
+
+  .sdr-row {
+    display: flex; align-items: center; gap: 0.3vw;
+    padding: 0.5vh 0.5vw; background: rgba(139,92,246,0.04); border-radius: 0.5vh;
+  }
+
+  .sdr-dot { width: 0.7vh; height: 0.7vh; border-radius: 50%; flex-shrink: 0; }
+  .sdr-dot.hot { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+  .sdr-dot.warm { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.4); }
+
+  .sdr-text { font-size: 1vh; color: #94a3b8; flex: 1; }
+
+  .sdr-badge { font-size: 0.8vh; font-weight: 700; padding: 0.2vh 0.3vw; border-radius: 0.3vh; flex-shrink: 0; }
+  .sdr-badge.hot { background: rgba(239,68,68,0.12); color: #f87171; }
+  .sdr-badge.warm { background: rgba(251,191,36,0.12); color: #fbbf24; }
+
+  .sdr-enrolled {
+    display: flex; align-items: center; gap: 0.3vw;
+    margin-top: 0.8vh; padding: 0.5vh 0.5vw;
+    background: rgba(168,210,48,0.05); border: 1px solid rgba(168,210,48,0.12); border-radius: 0.5vh;
+  }
+  .sdr-enrolled span { font-size: 0.85vh; font-weight: 600; color: #c5e847; }
+
+  /* Capacity bar */
+  .sdr-capacity { margin-bottom: 0.6vh; }
+
+  .cap-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8vh;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 0.3vh;
+  }
+
+  .cap-pct { font-weight: 800; color: #fbbf24; }
+
+  .cap-bar {
+    width: 100%;
+    height: 0.6vh;
+    background: rgba(255,255,255,0.06);
+    border-radius: 0.3vh;
+    overflow: hidden;
+  }
+
+  .cap-fill {
+    height: 100%;
+    border-radius: 0.3vh;
+    transition: width 1s ease;
+  }
+
+  /* Stats */
+  .sdr-stats {
+    display: flex;
+    gap: 0.5vw;
+    margin-bottom: 0.5vh;
+  }
+
+  .stat-row {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3vh 0.3vw;
+    background: rgba(139,92,246,0.04);
+    border-radius: 0.4vh;
+  }
+
+  .stat-label { font-size: 0.7vh; color: #64748b; font-weight: 500; }
+  .stat-val { font-size: 0.9vh; font-weight: 700; color: #e2e8f0; }
+
+  /* Top-up trigger */
+  .sdr-topup {
+    display: flex;
+    align-items: center;
+    gap: 0.2vw;
+    margin-top: auto;
+    padding: 0.5vh 0.5vw;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 0.5vh;
+    animation: topupPulse 2s ease-in-out infinite;
+  }
+
+  .sdr-topup span { font-size: 0.85vh; font-weight: 600; color: #fbbf24; }
+
+  /* AE Handoff output */
+  .ae-handoff {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3vw;
+    padding: 0.5vh 0.5vw;
+    background: rgba(168,210,48,0.06);
+    border: 1px solid rgba(168,210,48,0.2);
+    border-radius: 0.6vh;
+  }
+
+  .ae-icon { font-size: 1.2vh; }
+  .ae-text { font-size: 0.85vh; font-weight: 700; color: #c5e847; letter-spacing: 1px; text-transform: uppercase; }
+
+  @keyframes topupPulse {
+    0%, 100% { border-color: rgba(245,158,11,0.2); }
+    50% { border-color: rgba(245,158,11,0.5); box-shadow: 0 0 12px rgba(245,158,11,0.1); }
+  }
+
+  /* ---- FLOW BANDS ---- */
+  .flow-band {
+    position: absolute;
+    height: 0.4vh;
+    border-radius: 0.2vh;
+    z-index: 3;
+    overflow: hidden;
+  }
+
+  .flow-band::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    border-radius: 0.2vh;
+    animation: bandFlow 2.5s ease-in-out infinite;
+  }
+
+  @keyframes bandFlow {
+    0% { left: -50%; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  /* Signals → Gate 1 */
+  .b-s1 { top: 16vh; left: 13%; width: 2%; background: rgba(239,68,68,0.08); }
+  .b-s1::after { background: linear-gradient(90deg, transparent, rgba(239,68,68,0.7), transparent); animation-delay: 0s; }
+  .b-s2 { top: 23vh; left: 13%; width: 2%; background: rgba(239,68,68,0.08); }
+  .b-s2::after { background: linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent); animation-delay: 0.2s; }
+  .b-s3 { top: 30vh; left: 13%; width: 2%; background: rgba(251,191,36,0.08); }
+  .b-s3::after { background: linear-gradient(90deg, transparent, rgba(251,191,36,0.7), transparent); animation-delay: 0.4s; }
+  .b-s4 { top: 37vh; left: 13%; width: 2%; background: rgba(251,191,36,0.08); }
+  .b-s4::after { background: linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent); animation-delay: 0.6s; }
+  .b-s5 { top: 44vh; left: 13%; width: 2%; background: rgba(251,191,36,0.08); }
+  .b-s5::after { background: linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent); animation-delay: 0.8s; }
+  .b-s6 { top: 51vh; left: 13%; width: 2%; background: rgba(100,116,139,0.08); }
+  .b-s6::after { background: linear-gradient(90deg, transparent, rgba(100,116,139,0.6), transparent); animation-delay: 1.0s; }
+  .b-s7 { top: 58vh; left: 13%; width: 2%; background: rgba(100,116,139,0.08); }
+  .b-s7::after { background: linear-gradient(90deg, transparent, rgba(100,116,139,0.5), transparent); animation-delay: 1.2s; }
+
+  /* Gate 1 → Gate 2 */
+  .b-f1 { top: 20vh; left: 17%; width: 19%; background: rgba(245,158,11,0.06); }
+  .b-f1::after { background: linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent); animation-delay: 0.8s; animation-duration: 3.5s; }
+  .b-f2 { top: 35vh; left: 17%; width: 19%; background: rgba(245,158,11,0.05); }
+  .b-f2::after { background: linear-gradient(90deg, transparent, rgba(245,158,11,0.4), transparent); animation-delay: 1.4s; animation-duration: 3.5s; }
+  .b-f3 { top: 50vh; left: 17%; width: 19%; background: rgba(245,158,11,0.04); }
+  .b-f3::after { background: linear-gradient(90deg, transparent, rgba(245,158,11,0.35), transparent); animation-delay: 2.0s; animation-duration: 3.5s; }
+
+  /* Gate 2 → Gate 3 */
+  .b-b1 { top: 24vh; left: 38%; width: 19%; background: rgba(168,210,48,0.06); }
+  .b-b1::after { background: linear-gradient(90deg, transparent, rgba(168,210,48,0.5), transparent); animation-delay: 1.6s; animation-duration: 3.5s; }
+  .b-b2 { top: 46vh; left: 38%; width: 19%; background: rgba(168,210,48,0.05); }
+  .b-b2::after { background: linear-gradient(90deg, transparent, rgba(168,210,48,0.4), transparent); animation-delay: 2.2s; animation-duration: 3.5s; }
+
+  /* Gate 3 → Gate 4 (sequencing zone) */
+  .b-q1 { top: 18vh; left: 59%; width: 20%; background: rgba(236,72,153,0.06); }
+  .b-q1::after { background: linear-gradient(90deg, transparent, rgba(236,72,153,0.5), transparent); animation-delay: 2.4s; animation-duration: 3.5s; }
+  .b-q2 { top: 40vh; left: 59%; width: 20%; background: rgba(236,72,153,0.05); }
+  .b-q2::after { background: linear-gradient(90deg, transparent, rgba(236,72,153,0.4), transparent); animation-delay: 3.0s; animation-duration: 3.5s; }
+
+  /* Gate 4 → SDR Pipeline */
+  .b-p1 { top: 16vh; left: 81%; width: 10%; background: rgba(139,92,246,0.06); }
+  .b-p1::after { background: linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent); animation-delay: 3.4s; animation-duration: 2.5s; }
+  .b-p2 { top: 38vh; left: 81%; width: 10%; background: rgba(139,92,246,0.05); }
+  .b-p2::after { background: linear-gradient(90deg, transparent, rgba(139,92,246,0.4), transparent); animation-delay: 3.8s; animation-duration: 2.5s; }
+  .b-p3 { top: 56vh; left: 81%; width: 10%; background: rgba(139,92,246,0.04); }
+  .b-p3::after { background: linear-gradient(90deg, transparent, rgba(139,92,246,0.35), transparent); animation-delay: 4.2s; animation-duration: 2.5s; }
+
+  /* ---- REJECT ZONE (centered in enrichment zone) ---- */
+  .reject-zone {
+    position: absolute;
+    left: 26%;
+    top: 56vh;
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+    max-width: 14vw;
+  }
+
+  /* Dots falling FROM the panel INTO the reject card */
+  .reject-source-dots {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3vh;
+    margin-bottom: 0.4vh;
+  }
+
+  .reject-source-dot {
+    width: 0.6vh; height: 0.6vh; border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 5px rgba(239,68,68,0.4);
+    animation: rejectSourceFall 1.5s ease-in infinite;
+  }
+  .reject-source-dot:nth-child(2) { animation-delay: 0.4s; }
+  .reject-source-dot:nth-child(3) { animation-delay: 0.8s; }
+
+  @keyframes rejectSourceFall {
+    0% { transform: translateY(-1.5vh); opacity: 0; }
+    30% { opacity: 0.8; }
+    100% { transform: translateY(0.5vh); opacity: 0.3; }
+  }
+
+  .reject-card {
+    display: flex;
+    align-items: center;
+    gap: 0.4vw;
+    padding: 0.6vh 0.8vw;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 1vh;
+    margin-bottom: 0.5vh;
+  }
+
+  .reject-icon { font-size: 1.6vh; }
+
+  .reject-count {
+    font-size: 1.8vh;
+    font-weight: 800;
+    color: #f87171;
+  }
+
+  .reject-label {
+    font-size: 0.9vh;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ef4444;
+  }
+
+  .reject-sublabel {
+    font-size: 0.65vh;
+    color: #94a3b8;
+    margin-top: 0.1vh;
+    line-height: 1.2;
+  }
+
+  /* Dots falling DOWN from reject card */
+  .reject-dots {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3vh;
+  }
+
+  .reject-dot {
+    width: 0.7vh; height: 0.7vh; border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239,68,68,0.4);
+    animation: rejectFall 2s ease-in infinite;
+  }
+  .reject-dot:nth-child(2) { animation-delay: 0.4s; width: 0.5vh; height: 0.5vh; }
+  .reject-dot:nth-child(3) { animation-delay: 0.8s; width: 0.6vh; height: 0.6vh; }
+  .reject-dot:nth-child(4) { animation-delay: 1.2s; width: 0.4vh; height: 0.4vh; }
+  .reject-dot:nth-child(5) { animation-delay: 1.6s; width: 0.5vh; height: 0.5vh; }
+
+  @keyframes rejectFall {
+    0% { transform: translateY(0); opacity: 0.8; }
+    100% { transform: translateY(5vh); opacity: 0; }
+  }
+
+  /* ======== FEEDBACK LOOP ======== */
+  .feedback-svg {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 30vh;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  /* Return dots are now SVG circles with animateMotion — see HTML */
+
+  /* Feedback panel */
+  .feedback-panel {
+    position: absolute;
+    bottom: 5.5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    width: 52vw;
+  }
+
+  .fp-card {
+    background: rgba(10,3,32,0.94);
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 1.6vh;
+    padding: 1.4vh 1.4vw;
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    gap: 1.2vw;
+    box-shadow: 0 0 50px rgba(139,92,246,0.08);
+  }
+
+  .fp-header { display: flex; align-items: center; gap: 0.6vw; flex-shrink: 0; }
+  .fp-icon { font-size: 2.4vh; }
+  .fp-title { font-size: 1.2vh; font-weight: 700; color: #a78bfa; letter-spacing: 1px; text-transform: uppercase; }
+  .fp-sub { font-size: 0.8vh; color: #475569; margin-top: 0.1vh; }
+
+  .fp-divider { width: 1px; height: 5vh; background: rgba(139,92,246,0.15); flex-shrink: 0; }
+
+  .fp-items { display: flex; gap: 0.5vw; flex: 1; }
+
+  .fp-item {
+    flex: 1;
+    padding: 1.2vh 0.6vw;
+    background: rgba(139,92,246,0.04);
+    border: 1px solid rgba(139,92,246,0.1);
+    border-radius: 1vh;
+    text-align: center;
+  }
+
+  .fp-item-icon { font-size: 1.8vh; display: block; margin-bottom: 0.4vh; }
+  .fp-item-title { font-size: 1vh; font-weight: 600; color: #e2e8f0; }
+  .fp-item-desc { font-size: 0.8vh; color: #64748b; margin-top: 0.2vh; line-height: 1.3; }
+
+  .path-label {
+    position: absolute;
+    z-index: 16;
+    font-size: 1.1vh;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .pl-right { right: 2%; bottom: 4vh; color: rgba(139,92,246,0.6); }
+  .pl-center { left: 50%; transform: translateX(-50%); bottom: 22vh; color: rgba(139,92,246,0.5); font-size: 1vh; }
+  .pl-left { left: 16%; bottom: 4vh; color: rgba(59,130,246,0.6); }
+
+  /* ---- LEGEND ---- */
+  .legend {
+    position: absolute;
+    bottom: 5vh;
+    left: 2%;
+    z-index: 15;
+    display: flex;
+    gap: 0.8vw;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.2vw; }
+  .legend-dot { width: 1vh; height: 1vh; border-radius: 50%; }
+  .legend-dot.hot { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.4); }
+  .legend-dot.warm { background: #fbbf24; box-shadow: 0 0 4px rgba(251,191,36,0.4); }
+  .legend-dot.cold { background: #475569; }
+  .legend-text { font-size: 1.1vh; font-weight: 600; color: #475569; letter-spacing: 1px; text-transform: uppercase; }
+
+  .footer { position: absolute; bottom: 0.6vh; right: 1vw; font-size: 0.8vh; color: #1e293b; z-index: 20; }
+</style>
+</head>
+<body>
+
+  <canvas id="starfield"></canvas>
+
+  <!-- Zones -->
+  <div class="zone zone-signals"></div>
+  <div class="zone zone-sieve"></div>
+  <div class="zone zone-brain"></div>
+  <div class="zone zone-sequence"></div>
+  <div class="zone zone-pipeline"></div>
+
+  <!-- Glows -->
+  <div class="bg-glow g1"></div>
+  <div class="bg-glow g2"></div>
+  <div class="bg-glow g3"></div>
+  <div class="bg-glow g4"></div>
+  <div class="bg-glow g5"></div>
+
+  <!-- Header (removed) -->
+
+  <!-- Counters with stage labels -->
+  <div class="counters">
+    <div class="counter cnt-1"><div class="c-sublabel">Signal Sources</div><div class="c-num">2,147</div><div class="c-label">Raw Signals</div></div>
+    <div class="counter cnt-2"><div class="c-sublabel">Enrichment Engine</div><div class="c-num">814</div><div class="c-label">Enriched &amp; Qualified</div></div>
+    <div class="counter cnt-3"><div class="c-sublabel">Allocation Engine</div><div class="c-num">387</div><div class="c-label">Allocated</div></div>
+    <div class="counter cnt-4"><div class="c-sublabel">Sequencing Engine</div><div class="c-num">387</div><div class="c-label">Sequenced</div></div>
+    <div class="counter cnt-5"><div class="c-sublabel">Pipeline Engine</div><div class="c-num">418</div><div class="c-label">Active Contacts</div></div>
+  </div>
+
+  <!-- Gate labels on pillars -->
+  <div class="gate-label-text gl-1">Enrichment Engine</div>
+  <div class="gate-label-text gl-2">Allocation Engine</div>
+  <div class="gate-label-text gl-3">Sequencing Engine</div>
+  <div class="gate-label-text gl-4">Pipeline Engine</div>
+
+  <!-- Signal Sources -->
+  <div class="signals-col">
+    <div class="sig-card"><div class="sig-icon hot">🔥</div><div><div class="sc-name">Website Visitors</div><div class="sc-type hot">Hot Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon hot">🎯</div><div><div class="sc-name">6sense Intent</div><div class="sc-type hot">Hot Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon hot">🔁</div><div><div class="sc-name">EH Terminated Admins</div><div class="sc-type hot">Hot Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon hot">⭐</div><div><div class="sc-name">G2 / Capterra Intent</div><div class="sc-type hot">Hot Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon warm">🔄</div><div><div class="sc-name">Job Changes</div><div class="sc-type warm">Warm Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon warm">📰</div><div><div class="sc-name">News &amp; Hiring</div><div class="sc-type warm">Warm Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon warm">👥</div><div><div class="sc-name">HR Hiring Surges</div><div class="sc-type warm">Warm Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon warm">⚡</div><div><div class="sc-name">Salesforce Signals</div><div class="sc-type warm">Warm Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon warm">🔧</div><div><div class="sc-name">Tech Stack Changes</div><div class="sc-type warm">Warm Signal</div></div></div>
+    <div class="sig-card"><div class="sig-icon cold">🔍</div><div><div class="sc-name">ZoomInfo</div><div class="sc-type cold">Cold Source</div></div></div>
+    <div class="sig-card"><div class="sig-icon cold">💼</div><div><div class="sc-name">LinkedIn Sales Nav</div><div class="sc-type cold">Cold Source</div></div></div>
+  </div>
+
+  <!-- Gates -->
+  <div class="gate gate-1"><div class="gate-glow"></div><div class="gate-pillar"></div></div>
+  <div class="gate gate-2"><div class="gate-glow"></div><div class="gate-pillar"></div></div>
+  <div class="gate gate-3"><div class="gate-glow"></div><div class="gate-pillar"></div></div>
+  <div class="gate gate-4"><div class="gate-glow"></div><div class="gate-pillar"></div></div>
+
+  <!-- ICP Sieve -->
+  <div class="info-panel panel-sieve">
+    <div class="ip-card">
+      <div class="ip-title">Enrichment Engine</div>
+      <div class="ip-sub">Waterfall enrichment, ICP validation, compliance, and scoring</div>
+      <ul class="ip-list">
+        <li><span class="ip-num">1</span> Deduplicate &amp; Cleanse</li>
+        <li><span class="ip-num">2</span> Existing Customer Check</li>
+        <li><span class="ip-num">3</span> Do Not Contact Check</li>
+        <li><span class="ip-num">4</span> Waterfall Enrich: ZoomInfo → Cognism → Lusha</li>
+        <li><span class="ip-num">5</span> ICP Fit (industry, size, region, persona)</li>
+        <li><span class="ip-num">6</span> Email Verification (ZeroBounce)</li>
+        <li><span class="ip-num">7</span> Spam Act / GDPR Compliance Check</li>
+        <li><span class="ip-num">8</span> Personalised Lead Score (custom model)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Decision Brain -->
+  <div class="info-panel panel-brain">
+    <div class="ip-card">
+      <div class="ip-title">Allocation Engine</div>
+      <div class="ip-sub">Decides where each lead goes and builds the outreach context</div>
+      <ul class="ip-list">
+        <li><span class="ip-num">🗺️</span> Territory: Core (10-150) or Mid-Market (151-1500)</li>
+        <li><span class="ip-num">⚖️</span> ROE compliance</li>
+        <li><span class="ip-num">🔄</span> Round-robin balancing</li>
+        <li><span class="ip-num">📊</span> Opportunity score (lead score + signal strength)</li>
+        <li><span class="ip-num">🧠</span> SDR capacity &amp; workload awareness</li>
+        <li><span class="ip-num">📝</span> Signal context card (why we're reaching out)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Outreach Sequence -->
+  <div class="seq-panel">
+    <div class="seq-card">
+      <div class="seq-title">Outreach Sequencing</div>
+      <div class="seq-sub">Auto-enrolled multi-touch cadences · Warmed domains · Signal-aware copy</div>
+      <div class="seq-timeline">
+        <div class="seq-flow-dot"></div>
+        <div class="seq-step active">
+          <span class="seq-step-icon">📧</span>
+          <div><div class="seq-step-title">Signal-Aware Email</div><div class="seq-step-detail">AI copy referencing specific trigger</div></div>
+          <span class="seq-step-timing">Day 1</span>
+        </div>
+        <div class="seq-step active">
+          <span class="seq-step-icon">📞</span>
+          <div><div class="seq-step-title">Discovery Call</div><div class="seq-step-detail">SDR calls with signal context card</div></div>
+          <span class="seq-step-timing">Day 2</span>
+        </div>
+        <div class="seq-step">
+          <span class="seq-step-icon">💬</span>
+          <div><div class="seq-step-title">LinkedIn Touch</div><div class="seq-step-detail">Connection + value message</div></div>
+          <span class="seq-step-timing">Day 4</span>
+        </div>
+        <div class="seq-step">
+          <span class="seq-step-icon">📧</span>
+          <div><div class="seq-step-title">Follow-Up Email</div><div class="seq-step-detail">Case study or value prop</div></div>
+          <span class="seq-step-timing">Day 7</span>
+        </div>
+        <div class="seq-step">
+          <span class="seq-step-icon">📞</span>
+          <div><div class="seq-step-title">Final Call</div><div class="seq-step-detail">Last touch, leave door open</div></div>
+          <span class="seq-step-timing">Day 10</span>
+        </div>
+        <div class="seq-step" style="border-top: 1px solid rgba(168,210,48,0.15); padding-top: 0.8vh; margin-top: 0.4vh;">
+          <span class="seq-step-icon">🤖</span>
+          <div><div class="seq-step-title" style="color:#c5e847;">AI Reply Handler</div><div class="seq-step-detail">Classify intent · Auto-respond · Book meetings</div></div>
+          <span class="seq-step-timing" style="color:#c5e847; background:rgba(168,210,48,0.1);">24/7</span>
+        </div>
+      </div>
+      <div class="seq-contacts">
+        <div class="seq-contact">
+          <div class="scr-avatar" style="background:rgba(239,68,68,0.12);color:#f87171;">AP</div>
+          <div><div class="scr-name">Alex Park — Nexon HR</div><div class="scr-status">Step 2 of 5 · Day 2</div></div>
+          <span class="scr-badge call">Call</span>
+        </div>
+        <div class="seq-contact">
+          <div class="scr-avatar" style="background:rgba(251,191,36,0.12);color:#fbbf24;">RM</div>
+          <div><div class="scr-name">Rachel Moore — Buildcorp</div><div class="scr-status">Step 1 of 5 · Day 1</div></div>
+          <span class="scr-badge email">Email</span>
+        </div>
+        <div class="seq-contact">
+          <div class="scr-avatar" style="background:rgba(139,92,246,0.12);color:#a78bfa;">TN</div>
+          <div><div class="scr-name">Tom Nguyen — ScaleUp Co</div><div class="scr-status">Step 3 of 5 · Day 4</div></div>
+          <span class="scr-badge linkedin">LinkedIn</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SDR Capacity & Top-Up -->
+  <div class="sdr-col">
+    <div class="sdr-card">
+      <div class="sdr-header">
+        <div class="sdr-avatar" style="background:rgba(239,68,68,0.12);color:#f87171;">JT</div>
+        <div><div class="sdr-name">Jordan Taylor</div><div class="sdr-segment">Core — Sydney</div></div>
+      </div>
+      <div class="sdr-capacity">
+        <div class="cap-label"><span>142 / 200 contacts</span><span class="cap-pct">71%</span></div>
+        <div class="cap-bar"><div class="cap-fill" style="width:71%; background: linear-gradient(90deg, #c5e847, #fbbf24);"></div></div>
+      </div>
+      <div class="sdr-stats">
+        <div class="stat-row"><span class="stat-label">In sequence</span><span class="stat-val">38</span></div>
+        <div class="stat-row"><span class="stat-label">Meetings booked</span><span class="stat-val" style="color:#c5e847;">7</span></div>
+      </div>
+      <div class="sdr-enrolled"><span>✅ Healthy — Auto top-up at 100</span></div>
+    </div>
+    <div class="sdr-card">
+      <div class="sdr-header">
+        <div class="sdr-avatar" style="background:rgba(251,191,36,0.12);color:#fbbf24;">ML</div>
+        <div><div class="sdr-name">Morgan Lee</div><div class="sdr-segment">Core — Melbourne</div></div>
+      </div>
+      <div class="sdr-capacity">
+        <div class="cap-label"><span>87 / 200 contacts</span><span class="cap-pct" style="color:#f87171;">44%</span></div>
+        <div class="cap-bar"><div class="cap-fill" style="width:44%; background: linear-gradient(90deg, #ef4444, #fbbf24);"></div></div>
+      </div>
+      <div class="sdr-stats">
+        <div class="stat-row"><span class="stat-label">In sequence</span><span class="stat-val">22</span></div>
+        <div class="stat-row"><span class="stat-label">Meetings booked</span><span class="stat-val" style="color:#c5e847;">4</span></div>
+      </div>
+      <div class="sdr-topup"><span>⚡ Top-up triggered — 113 contacts incoming</span></div>
+    </div>
+    <div class="sdr-card">
+      <div class="sdr-header">
+        <div class="sdr-avatar" style="background:rgba(139,92,246,0.12);color:#a78bfa;">SK</div>
+        <div><div class="sdr-name">Sam Kim</div><div class="sdr-segment">Mid-Market — Auckland</div></div>
+      </div>
+      <div class="sdr-capacity">
+        <div class="cap-label"><span>189 / 200 contacts</span><span class="cap-pct" style="color:#c5e847;">95%</span></div>
+        <div class="cap-bar"><div class="cap-fill" style="width:95%; background: linear-gradient(90deg, #c5e847, #c5e847);"></div></div>
+      </div>
+      <div class="sdr-stats">
+        <div class="stat-row"><span class="stat-label">In sequence</span><span class="stat-val">52</span></div>
+        <div class="stat-row"><span class="stat-label">Meetings booked</span><span class="stat-val" style="color:#c5e847;">11</span></div>
+      </div>
+      <div class="sdr-enrolled"><span>✅ Full — Next top-up in 12 days</span></div>
+    </div>
+    <!-- Output: AE Handoff -->
+    <div class="ae-handoff">
+      <span class="ae-icon">🤝</span>
+      <span class="ae-text">Meeting Booked → AE Handoff</span>
+    </div>
+  </div>
+
+  <!-- Reject -->
+  <div class="reject-zone">
+    <div class="reject-source-dots">
+      <div class="reject-source-dot"></div>
+      <div class="reject-source-dot"></div>
+      <div class="reject-source-dot"></div>
+    </div>
+    <div class="reject-card">
+      <span class="reject-icon">🚫</span>
+      <span class="reject-count">1,333</span>
+      <div>
+        <div class="reject-label">Not ICP / DNC</div>
+        <div class="reject-sublabel">Filtered out, do not contact, or non-compliant</div>
+      </div>
+    </div>
+    <div class="reject-dots">
+      <div class="reject-dot"></div>
+      <div class="reject-dot"></div>
+      <div class="reject-dot"></div>
+      <div class="reject-dot"></div>
+      <div class="reject-dot"></div>
+    </div>
+  </div>
+
+  <!-- Flow bands -->
+  <div class="flow-band b-s1"></div><div class="flow-band b-s2"></div><div class="flow-band b-s3"></div>
+  <div class="flow-band b-s4"></div><div class="flow-band b-s5"></div><div class="flow-band b-s6"></div>
+  <div class="flow-band b-s7"></div>
+  <div class="flow-band b-f1"></div><div class="flow-band b-f2"></div><div class="flow-band b-f3"></div>
+  <div class="flow-band b-b1"></div><div class="flow-band b-b2"></div>
+  <div class="flow-band b-q1"></div><div class="flow-band b-q2"></div>
+  <div class="flow-band b-p1"></div><div class="flow-band b-p2"></div><div class="flow-band b-p3"></div>
+
+  <!-- Feedback SVG -->
+  <svg class="feedback-svg" viewBox="0 0 1920 350" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="rg" x1="1" y1="0" x2="0" y2="0">
+        <stop offset="0%" stop-color="rgba(139,92,246,0.45)"/>
+        <stop offset="50%" stop-color="rgba(139,92,246,0.35)"/>
+        <stop offset="100%" stop-color="rgba(59,130,246,0.25)"/>
+      </linearGradient>
+    </defs>
+    <!-- Define the return path -->
+    <path id="returnPath" d="M 1800 10 C 1800 200, 1400 280, 960 280 C 520 280, 120 200, 120 10"
+          fill="none"/>
+    <!-- Glow path -->
+    <use href="#returnPath" stroke="url(#rg)" stroke-width="14" opacity="0.12" filter="blur(8px)"/>
+    <!-- Main path -->
+    <use href="#returnPath" stroke="url(#rg)" stroke-width="3" stroke-dasharray="10 6"/>
+
+    <!-- Animated dots following the path -->
+    <circle r="6" fill="#a78bfa" opacity="0">
+      <animateMotion dur="5s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#returnPath"/>
+      </animateMotion>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="6" fill="#a78bfa" filter="url(#dotGlow)" opacity="0">
+      <animateMotion dur="5s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#returnPath"/>
+      </animateMotion>
+      <animate attributeName="opacity" values="0;0.4;0.4;0" keyTimes="0;0.05;0.9;1" dur="5s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle r="5" fill="#a78bfa" opacity="0">
+      <animateMotion dur="5s" begin="1.7s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#returnPath"/>
+      </animateMotion>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="5s" begin="1.7s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle r="4" fill="#6366f1" opacity="0">
+      <animateMotion dur="5s" begin="3.4s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#returnPath"/>
+      </animateMotion>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="5s" begin="3.4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Glow filter for dots -->
+    <defs>
+      <filter id="dotGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Return dots are inside the SVG now -->
+
+  <!-- Path labels -->
+  <div class="path-label pl-center">← Learn · Refine · Recycle →</div>
+
+  <!-- Feedback panel -->
+  <div class="feedback-panel">
+    <div class="fp-card">
+      <div class="fp-header">
+        <div class="fp-icon">🔁</div>
+        <div>
+          <div class="fp-title">Feedback Loop</div>
+          <div class="fp-sub">Self-improving closed-loop system</div>
+        </div>
+      </div>
+      <div class="fp-divider"></div>
+      <div class="fp-items">
+        <div class="fp-item"><span class="fp-item-icon">⚡</span><div class="fp-item-title">Auto Top-Up</div><div class="fp-item-desc">SDR dips below threshold? Pipeline auto-replenishes.</div></div>
+        <div class="fp-item"><span class="fp-item-icon">⏰</span><div class="fp-item-title">Stale Rotation</div><div class="fp-item-desc">No engagement? Remove, free capacity for fresh leads.</div></div>
+        <div class="fp-item"><span class="fp-item-icon">♻️</span><div class="fp-item-title">6-Month Recycle</div><div class="fp-item-desc">Non-converts cool off, re-enter as warm signals.</div></div>
+        <div class="fp-item"><span class="fp-item-icon">🔗</span><div class="fp-item-title">Signal → Deal Attribution</div><div class="fp-item-desc">Which signal closed? Reweight the scoring model.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot hot"></div><div class="legend-text">Hot</div></div>
+    <div class="legend-item"><div class="legend-dot warm"></div><div class="legend-text">Warm</div></div>
+    <div class="legend-item"><div class="legend-dot cold"></div><div class="legend-text">Cold</div></div>
+  </div>
+
+  <div class="footer">Employment Hero — RevOps v1.0</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let w, h, stars = [];
+  const COUNT = 120;
+  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+  function init() {
+    resize();
+    stars = [];
+    for (let i = 0; i < COUNT; i++) {
+      stars.push({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.2+0.3, alpha: Math.random()*0.4+0.1, drift: (Math.random()-0.5)*0.15, ts: Math.random()*0.008+0.003, to: Math.random()*Math.PI*2 });
+    }
+  }
+  function draw(t) {
+    ctx.clearRect(0,0,w,h);
+    for (const s of stars) {
+      s.y += s.drift; s.x += s.drift*0.3;
+      if (s.y<-5) s.y=h+5; if (s.y>h+5) s.y=-5;
+      if (s.x<-5) s.x=w+5; if (s.x>w+5) s.x=-5;
+      const f = s.alpha + Math.sin(t*s.ts+s.to)*0.15;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(200,180,240,${Math.max(0.05,f)})`; ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  init(); requestAnimationFrame(draw);
+})();
+</script>
+
+</body>
+</html>
