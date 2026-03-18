@@ -832,15 +832,17 @@
               <div id="ml-v2" style="display:flex; align-items:center; gap:0.3vw; font-size:0.85vh; color:#c5e847; padding:0.2vh 0; opacity:0; transition: opacity 0.3s;"><span>✓</span> 88% contacts worked</div>
               <div id="ml-v3" style="display:flex; align-items:center; gap:0.3vw; font-size:0.85vh; color:#c5e847; padding:0.2vh 0; opacity:0; transition: opacity 0.3s;"><span>✓</span> No churn pattern detected</div>
             </div>
-            <!-- Button -->
-            <div id="ml-btn" style="width:100%; padding:0.8vh; border-radius:0.8vh; text-align:center; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); color:#a78bfa; font-size:1.05vh; font-weight:700; letter-spacing:0.5px; transition: all 0.3s;">
-              REQUEST TOP-UP
-            </div>
-            <!-- Animated cursor -->
-            <div id="ml-cursor" style="position:absolute; width:2.5vh; height:2.5vh; opacity:0; z-index:10; pointer-events:none; transition: all 0.6s cubic-bezier(0.4,0,0.2,1);">
-              <svg viewBox="0 0 24 24" fill="white" style="width:100%; height:100%; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
-                <path d="M5 3l14 8-6 2-4 6z"/>
-              </svg>
+            <!-- Button + Cursor wrapper -->
+            <div style="width:100%; position:relative;">
+              <div id="ml-btn" style="width:100%; padding:0.8vh; border-radius:0.8vh; text-align:center; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); color:#a78bfa; font-size:1.05vh; font-weight:700; letter-spacing:0.5px; transition: all 0.3s;">
+                REQUEST TOP-UP
+              </div>
+              <!-- Animated cursor — positioned relative to button wrapper -->
+              <div id="ml-cursor" style="position:absolute; width:2.5vh; height:2.5vh; opacity:0; z-index:10; pointer-events:none; right:-1vw; top:-8vh;">
+                <svg viewBox="0 0 24 24" fill="white" style="width:100%; height:100%; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+                  <path d="M5 3l14 8-6 2-4 6z"/>
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -1146,40 +1148,32 @@
       resetState();
       btn.style.transform = '';
 
-      // Wait a frame for layout to settle after reset, then calculate positions
-      requestAnimationFrame(function() {
-        let phase = -1;
+      let phase = -1;
 
-        // Get button position AFTER reset (validation hidden, button in correct spot)
-        const btnRect = btn.getBoundingClientRect();
-        const cardRect = card.getBoundingClientRect();
-        const targetX = btnRect.left - cardRect.left + btnRect.width * 0.5;
-        const targetY = btnRect.top - cardRect.top + btnRect.height * 0.4;
-        const startX = targetX + 50;
-        const startY = targetY - 100;
+      // Reset cursor to start position (above-right of button)
+      cursor.style.transition = 'none';
+      cursor.style.right = '-1vw';
+      cursor.style.top = '-8vh';
+      cursor.style.left = '';
+      cursor.style.opacity = '0';
+      void cursor.offsetWidth;
 
-        // Place cursor at start position
-        cursor.style.transition = 'none';
-        cursor.style.left = startX + 'px';
-        cursor.style.top = startY + 'px';
-        cursor.style.opacity = '0';
+      function setPhase(p) {
+        if (phase >= p) return;
+        phase = p;
 
-        function setPhase(p) {
-          if (phase >= p) return;
-          phase = p;
-
-          if (p === 1) {
-            // Cursor appears at start position
-            cursor.style.opacity = '1';
-          }
-          else if (p === 2) {
-            // Cursor glides to button — 1.5s travel time
-            cursor.style.transition = 'left 1.5s cubic-bezier(0.25,0.1,0.25,1), top 1.5s cubic-bezier(0.25,0.1,0.25,1)';
-            void cursor.offsetWidth;
-            cursor.style.left = targetX + 'px';
-            cursor.style.top = targetY + 'px';
-          }
-          else if (p === 3) {
+        if (p === 1) {
+          // Cursor appears at start position
+          cursor.style.opacity = '1';
+        }
+        else if (p === 2) {
+          // Cursor glides to button center — 1.5s travel
+          cursor.style.transition = 'right 1.5s cubic-bezier(0.25,0.1,0.25,1), top 1.5s cubic-bezier(0.25,0.1,0.25,1)';
+          void cursor.offsetWidth;
+          cursor.style.right = '35%';
+          cursor.style.top = '0.2vh';
+        }
+        else if (p === 3) {
             // Click — button press (cursor has arrived)
             btn.style.transform = 'scale(0.95)';
             btn.style.background = 'rgba(139,92,246,0.25)';
@@ -1279,7 +1273,6 @@
           }
         }
         requestAnimationFrame(tick);
-      });
     }
 
     // Only run when slide 5 is visible
