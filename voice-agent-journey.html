@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0320'/%3E%3Ctext x='16' y='24' text-anchor='middle' font-family='Inter,sans-serif' font-weight='800' font-size='22' fill='%23a78bfa'%3EA%3C/text%3E%3C/svg%3E">
+<title>AI Voice Agent — The Journey</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Mountain background with purple overlay blend */
+  .bg {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg,
+        rgba(10,3,32,0.92) 0%,
+        rgba(10,3,32,0.7) 15%,
+        rgba(10,3,32,0.3) 40%,
+        rgba(10,3,32,0.15) 55%,
+        rgba(10,3,32,0.4) 75%,
+        rgba(10,3,32,0.95) 100%
+      ),
+      linear-gradient(90deg,
+        rgba(124,58,237,0.15) 0%,
+        rgba(124,58,237,0.05) 30%,
+        rgba(109,40,217,0.08) 70%,
+        rgba(139,92,246,0.12) 100%
+      ),
+      url('https://images.unsplash.com/photo-1534854890710-ba83ceccf066?w=1920&q=80') center 60% / cover no-repeat;
+    z-index: 0;
+  }
+
+  /* Subtle purple glow top-left */
+  .glow-tl {
+    position: absolute;
+    top: -15vh; left: -10vw;
+    width: 50vw; height: 50vh;
+    background: radial-gradient(circle, rgba(124,58,237,0.2), transparent 65%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .glow-br {
+    position: absolute;
+    bottom: -10vh; right: -5vw;
+    width: 40vw; height: 40vh;
+    background: radial-gradient(circle, rgba(167,139,250,0.12), transparent 60%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Header */
+  .header {
+    position: absolute;
+    top: 3vh; left: 4vw; right: 4vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8vw;
+  }
+  .brand-mark {
+    width: 4vh; height: 4vh;
+    background: rgba(10,3,32,0.8);
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 0.9vh;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 2vh;
+    color: #a78bfa;
+  }
+  .brand-text {
+    font-size: 1.4vh;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #a78bfa;
+  }
+  .header-right {
+    font-size: 1.2vh;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+
+  /* Title block */
+  .title-block {
+    position: absolute;
+    top: 8vh;
+    left: 4vw;
+    z-index: 10;
+  }
+  .title-eyebrow {
+    font-size: 1.3vh;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #a78bfa;
+    margin-bottom: 1.5vh;
+  }
+  .title-main {
+    font-size: 6vh;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 0%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 2vh;
+  }
+  .title-sub {
+    font-size: 2vh;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+    max-width: 50ch;
+    line-height: 1.5;
+  }
+  .title-sub strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+
+  /* The golden path line */
+  .path-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Milestone markers */
+  .milestone {
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 14vw;
+  }
+
+  .ms-dot {
+    width: 2vh;
+    height: 2vh;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    margin-bottom: 1.2vh;
+  }
+  .ms-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid;
+    opacity: 0.4;
+  }
+  .ms-dot.amber { background: #fbbf24; box-shadow: 0 0 20px rgba(251,191,36,0.5); }
+  .ms-dot.amber::after { border-color: #fbbf24; }
+  .ms-dot.lime { background: #c5e847; box-shadow: 0 0 20px rgba(197,232,71,0.5); }
+  .ms-dot.lime::after { border-color: #c5e847; }
+  .ms-dot.pink { background: #f472b6; box-shadow: 0 0 20px rgba(244,114,182,0.5); }
+  .ms-dot.pink::after { border-color: #f472b6; }
+  .ms-dot.purple { background: #a78bfa; box-shadow: 0 0 20px rgba(167,139,250,0.5); }
+  .ms-dot.purple::after { border-color: #a78bfa; }
+  .ms-dot.white { background: #fff; box-shadow: 0 0 25px rgba(255,255,255,0.6); }
+  .ms-dot.white::after { border-color: #fff; }
+
+  /* Vertical dashed line from dot down to the path */
+  .ms-stem {
+    width: 1px;
+    border-left: 2px dashed rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+
+  .ms-card {
+    text-align: center;
+    padding: 0;
+  }
+  .ms-phase {
+    font-size: 1vh;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.5vh;
+  }
+  .ms-phase.amber { color: #fbbf24; }
+  .ms-phase.lime { color: #c5e847; }
+  .ms-phase.pink { color: #f472b6; }
+  .ms-phase.purple { color: #a78bfa; }
+  .ms-phase.white { color: #fff; }
+
+  .ms-title {
+    font-size: 2.4vh;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: #fff;
+    margin-bottom: 0.8vh;
+  }
+  .ms-desc {
+    font-size: 1.2vh;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.4;
+    max-width: 16ch;
+    margin: 0 auto;
+  }
+
+  /* Stats bar at the bottom */
+  .stats-bar {
+    position: absolute;
+    bottom: 3vh;
+    left: 4vw;
+    right: 4vw;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.2vw;
+  }
+  .stat-card {
+    background: rgba(10,3,32,0.75);
+    border: 1px solid rgba(139,92,246,0.15);
+    border-radius: 1.2vh;
+    padding: 1.8vh 1vw;
+    backdrop-filter: blur(12px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent, #a78bfa), transparent);
+    opacity: 0.5;
+  }
+  .stat-label {
+    font-size: 0.95vh;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent, #a78bfa);
+    margin-bottom: 0.8vh;
+  }
+  .stat-value {
+    font-size: 3vh;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-sub {
+    font-size: 1vh;
+    color: rgba(255,255,255,0.4);
+    margin-top: 0.6vh;
+    line-height: 1.3;
+  }
+
+  .stat-card.amber { --accent: #fbbf24; }
+  .stat-card.pink { --accent: #f472b6; }
+  .stat-card.lime { --accent: #c5e847; }
+  .stat-card.purple { --accent: #a78bfa; }
+
+  /* Footer */
+  .footer {
+    position: absolute;
+    bottom: 1vh;
+    right: 2vw;
+    font-size: 0.85vh;
+    color: rgba(255,255,255,0.1);
+    letter-spacing: 1px;
+    z-index: 10;
+  }
+
+  /* Animate milestones on load */
+  .milestone {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: riseIn 0.6s ease-out forwards;
+  }
+  .milestone:nth-child(1) { animation-delay: 0.3s; }
+  .milestone:nth-child(2) { animation-delay: 0.6s; }
+  .milestone:nth-child(3) { animation-delay: 0.9s; }
+  .milestone:nth-child(4) { animation-delay: 1.2s; }
+  .milestone:nth-child(5) { animation-delay: 1.5s; }
+
+  .stat-card {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: riseIn 0.5s ease-out forwards;
+  }
+  .stat-card:nth-child(1) { animation-delay: 1.8s; }
+  .stat-card:nth-child(2) { animation-delay: 1.9s; }
+  .stat-card:nth-child(3) { animation-delay: 2.0s; }
+  .stat-card:nth-child(4) { animation-delay: 2.1s; }
+  .stat-card:nth-child(5) { animation-delay: 2.2s; }
+
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Path glow animation */
+  @keyframes pathDraw {
+    from { stroke-dashoffset: 2000; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes dotTravel {
+    0% { offset-distance: 0%; opacity: 0; }
+    5% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="bg"></div>
+  <div class="glow-tl"></div>
+  <div class="glow-br"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <span class="brand-text">ATLAS · Voice Agent</span>
+    </div>
+    <div class="header-right">Australia · RevOps · 2026</div>
+  </div>
+
+  <!-- Title -->
+  <div class="title-block">
+    <div class="title-eyebrow">The Journey</div>
+    <div class="title-main">AI Inbound<br>Voice Agent</div>
+    <div class="title-sub">
+      Prove on <strong>Micro after-hours</strong>. Commercialise on <strong>Core</strong>.
+      Expand into business hours. Reclaim <strong>1.9 SDR FTE</strong>.
+    </div>
+  </div>
+
+  <!-- Golden path SVG -->
+  <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="pathGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.6"/>
+        <stop offset="30%" stop-color="#c5e847" stop-opacity="0.7"/>
+        <stop offset="55%" stop-color="#f472b6" stop-opacity="0.7"/>
+        <stop offset="80%" stop-color="#a78bfa" stop-opacity="0.7"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.8"/>
+      </linearGradient>
+      <filter id="pathGlow">
+        <feGaussianBlur stdDeviation="6" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- The ascending path across the mountain -->
+    <path id="journeyPath"
+      d="M 100,750
+         C 200,730 280,700 380,660
+         C 480,620 520,580 600,540
+         C 700,490 760,460 860,410
+         C 960,360 1020,340 1140,290
+         C 1260,240 1350,210 1500,170
+         C 1580,150 1700,120 1820,90"
+      fill="none"
+      stroke="url(#pathGrad)"
+      stroke-width="4"
+      stroke-linecap="round"
+      filter="url(#pathGlow)"
+      stroke-dasharray="2000"
+      style="animation: pathDraw 2s ease-out 0.2s forwards; stroke-dashoffset: 2000;"
+    />
+    <!-- Glow version underneath -->
+    <use href="#journeyPath" stroke="url(#pathGrad)" stroke-width="20" opacity="0.08" filter="url(#pathGlow)"/>
+
+    <!-- Traveling dot -->
+    <circle r="5" fill="#fff" opacity="0" style="offset-path: path('M 100,750 C 200,730 280,700 380,660 C 480,620 520,580 600,540 C 700,490 760,460 860,410 C 960,360 1020,340 1140,290 C 1260,240 1350,210 1500,170 C 1580,150 1700,120 1820,90'); animation: dotTravel 4s ease-in-out 2.5s infinite;">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+
+  <!-- Milestones along the path (positioned to follow the curve) -->
+
+  <!-- Phase 0: Foundation -->
+  <div class="milestone" style="left: 1.5%; bottom: 30%;">
+    <div class="ms-card">
+      <div class="ms-phase amber">Phase 0</div>
+      <div class="ms-title">Foundation</div>
+      <div class="ms-desc">Legal, spikes, playbook</div>
+    </div>
+    <div class="ms-stem" style="height: 3vh;"></div>
+    <div class="ms-dot amber"></div>
+  </div>
+
+  <!-- Phase 1: Micro After-Hours -->
+  <div class="milestone" style="left: 16%; bottom: 38%;">
+    <div class="ms-card">
+      <div class="ms-phase amber">Phase 1 · Weeks 1-4</div>
+      <div class="ms-title">Micro<br>After-Hours</div>
+      <div class="ms-desc">272 BADs/mo. A/B test. Close the 8.4 point gap.</div>
+    </div>
+    <div class="ms-stem" style="height: 4vh;"></div>
+    <div class="ms-dot amber"></div>
+  </div>
+
+  <!-- Phase 2: Core After-Hours -->
+  <div class="milestone" style="left: 34%; bottom: 47%;">
+    <div class="ms-card">
+      <div class="ms-phase pink">Phase 2 · Weeks 5-12</div>
+      <div class="ms-title">Core<br>After-Hours</div>
+      <div class="ms-desc">180 BADs/mo. Close the 13.8 point gap. $375K-$1.03M ARR.</div>
+    </div>
+    <div class="ms-stem" style="height: 5vh;"></div>
+    <div class="ms-dot pink"></div>
+  </div>
+
+  <!-- Phase 3: Micro Business Hours -->
+  <div class="milestone" style="left: 52%; bottom: 56%;">
+    <div class="ms-card">
+      <div class="ms-phase lime">Phase 3</div>
+      <div class="ms-title">Micro<br>Business Hours</div>
+      <div class="ms-desc">Match 20.6% biz-hours rate. Free ~67 SDR hrs/mo.</div>
+    </div>
+    <div class="ms-stem" style="height: 4vh;"></div>
+    <div class="ms-dot lime"></div>
+  </div>
+
+  <!-- Phase 4: Core Business Hours -->
+  <div class="milestone" style="left: 69%; bottom: 64%;">
+    <div class="ms-card">
+      <div class="ms-phase purple">Phase 4</div>
+      <div class="ms-title">Core<br>Business Hours</div>
+      <div class="ms-desc">Match 37.1% rate. ~85 SDR hrs/mo freed.</div>
+    </div>
+    <div class="ms-stem" style="height: 4vh;"></div>
+    <div class="ms-dot purple"></div>
+  </div>
+
+  <!-- Summit: End State -->
+  <div class="milestone" style="left: 84%; bottom: 72%;">
+    <div class="ms-card">
+      <div class="ms-phase white">The Summit</div>
+      <div class="ms-title" style="font-size: 2.8vh;">1.9 FTE<br>Reclaimed</div>
+      <div class="ms-desc" style="color: rgba(255,255,255,0.7);">All AU qualification automated. &lt;$250/mo tooling. 88:1 cost ratio.</div>
+    </div>
+    <div class="ms-stem" style="height: 3vh;"></div>
+    <div class="ms-dot white"></div>
+  </div>
+
+  <!-- Stats bar at bottom -->
+  <div class="stats-bar">
+    <div class="stat-card amber">
+      <div class="stat-label">Phase 1 Ask</div>
+      <div class="stat-value">4 wks</div>
+      <div class="stat-sub">65 person-hours<br>&lt;$900 tooling</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">After-Hours Volume</div>
+      <div class="stat-value">452/mo</div>
+      <div class="stat-sub">272 Micro + 180 Core<br>AU monthly average</div>
+    </div>
+    <div class="stat-card pink">
+      <div class="stat-label">P1+P2 Revenue</div>
+      <div class="stat-value">$485K-1.3M</div>
+      <div class="stat-sub">Annual ARR, AU<br>after-hours only</div>
+    </div>
+    <div class="stat-card lime">
+      <div class="stat-label">SDR Hours Freed</div>
+      <div class="stat-value">302/mo</div>
+      <div class="stat-sub">~1.9 FTE equivalent<br>~10% of AU pod</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">AI Tooling Cost</div>
+      <div class="stat-value">&lt;$250</div>
+      <div class="stat-sub">Per month, all phases<br>88:1 cost ratio</div>
+    </div>
+  </div>
+
+  <div class="footer">Employment Hero · RevOps · AI Voice Agent Strategy 2026</div>
+
+</div>
+
+</body>
+</html>
