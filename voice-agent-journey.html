@@ -386,30 +386,41 @@
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <!-- The ascending path across the mountain — coordinates match milestone dot positions -->
-    <!-- Dots are at: Foundation(3.5%,30%) Micro(18%,38%) Core(36%,47%) MicroBH(54%,56%) CoreBH(71%,64%) Summit(86%,72%) -->
-    <!-- Converting % to 1920x1080 coords: (67,756) (346,670) (691,572) (1037,475) (1363,389) (1651,302) -->
+    <!-- The ascending path with gentle undulation through each milestone dot -->
+    <!-- Milestone dot positions (CSS % → SVG coords at 1920x1080): -->
+    <!-- Foundation: left 3.5%, bottom 30% → (67, 756) -->
+    <!-- Phase 1:    left 17%,  bottom 38% → (326, 670) -->
+    <!-- Phase 2:    left 33%,  bottom 47% → (634, 572) -->
+    <!-- Phase 3:    left 51%,  bottom 56% → (979, 475) -->
+    <!-- Phase 4:    left 68%,  bottom 64% → (1306, 389) -->
+    <!-- Summit:     left 83%,  bottom 72% → (1594, 302) -->
+    <!-- Path dips ~30px between milestones for gentle undulation -->
     <path id="journeyPath"
       d="M 67,756
-         C 150,730 250,700 346,670
-         C 440,640 550,610 691,572
-         C 800,545 900,515 1037,475
-         C 1130,450 1230,420 1363,389
-         C 1460,365 1550,340 1651,302"
+         C 120,740 180,720 220,730
+         C 260,740 290,700 326,670
+         C 370,640 420,620 470,630
+         C 530,640 570,600 634,572
+         C 700,545 750,530 790,540
+         C 840,548 890,510 979,475
+         C 1040,455 1090,445 1130,452
+         C 1180,458 1230,420 1306,389
+         C 1370,365 1420,355 1460,360
+         C 1500,365 1540,335 1594,302"
       fill="none"
       stroke="url(#pathGrad)"
       stroke-width="4"
       stroke-linecap="round"
       filter="url(#pathGlow)"
-      stroke-dasharray="2000"
-      style="animation: pathDraw 2s ease-out 0.2s forwards; stroke-dashoffset: 2000;"
+      stroke-dasharray="2400"
+      style="animation: pathDraw 2.5s ease-out 0.2s forwards; stroke-dashoffset: 2400;"
     />
     <!-- Glow version underneath -->
     <use href="#journeyPath" stroke="url(#pathGrad)" stroke-width="22" opacity="0.08" filter="url(#pathGlow)"/>
 
     <!-- Traveling dot -->
-    <circle r="5" fill="#fff" opacity="0" style="offset-path: path('M 67,756 C 150,730 250,700 346,670 C 440,640 550,610 691,572 C 800,545 900,515 1037,475 C 1130,450 1230,420 1363,389 C 1460,365 1550,340 1651,302'); animation: dotTravel 4s ease-in-out 2.5s infinite;">
-      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+    <circle r="5" fill="#fff" opacity="0" style="offset-path: path('M 67,756 C 120,740 180,720 220,730 C 260,740 290,700 326,670 C 370,640 420,620 470,630 C 530,640 570,600 634,572 C 700,545 750,530 790,540 C 840,548 890,510 979,475 C 1040,455 1090,445 1130,452 C 1180,458 1230,420 1306,389 C 1370,365 1420,355 1460,360 C 1500,365 1540,335 1594,302'); animation: dotTravel 5s ease-in-out 2.8s infinite;">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="5s" begin="2.8s" repeatCount="indefinite"/>
     </circle>
   </svg>
 
@@ -423,7 +434,10 @@
   <!-- Phase 4: path(1363,389) → bottom = 100-36 = 64% -->
   <!-- Summit: path(1651,302) → bottom = 100-28 = 72% -->
 
-  <!-- Phase 0: Foundation -->
+  <!-- Milestone positions match SVG path coordinates exactly -->
+  <!-- left% = x/1920*100, bottom% = (1080-y)/1080*100 -->
+
+  <!-- Foundation: SVG(67,756) → left:3.5%, bottom:30% -->
   <div class="milestone" style="left: 0.5%; bottom: 30%; width: 11vw;">
     <div class="ms-card">
       <div class="ms-phase amber">Phase 0</div>
@@ -434,8 +448,8 @@
     <div class="ms-dot amber"></div>
   </div>
 
-  <!-- Phase 1: Micro After-Hours -->
-  <div class="milestone" style="left: 14%; bottom: 38%; width: 13vw;">
+  <!-- Phase 1: SVG(326,670) → left:17%, bottom:38% -->
+  <div class="milestone" style="left: 13.5%; bottom: 38%; width: 13vw;">
     <div class="ms-card">
       <div class="ms-phase amber">Phase 1 · Weeks 1-4</div>
       <div class="ms-title">Micro<br>After-Hours</div>
@@ -445,8 +459,8 @@
     <div class="ms-dot amber"></div>
   </div>
 
-  <!-- Phase 2: Core After-Hours -->
-  <div class="milestone" style="left: 30%; bottom: 47%; width: 14vw;">
+  <!-- Phase 2: SVG(634,572) → left:33%, bottom:47% -->
+  <div class="milestone" style="left: 29.5%; bottom: 47%; width: 14vw;">
     <div class="ms-card">
       <div class="ms-phase pink">Phase 2 · Weeks 5-12</div>
       <div class="ms-title">Core<br>After-Hours</div>
@@ -456,8 +470,8 @@
     <div class="ms-dot pink"></div>
   </div>
 
-  <!-- Phase 3: Micro Business Hours -->
-  <div class="milestone" style="left: 48%; bottom: 56%; width: 14vw;">
+  <!-- Phase 3: SVG(979,475) → left:51%, bottom:56% -->
+  <div class="milestone" style="left: 47.5%; bottom: 56%; width: 14vw;">
     <div class="ms-card">
       <div class="ms-phase lime">Phase 3</div>
       <div class="ms-title">Micro<br>Business Hours</div>
@@ -467,8 +481,8 @@
     <div class="ms-dot lime"></div>
   </div>
 
-  <!-- Phase 4: Core Business Hours -->
-  <div class="milestone" style="left: 65%; bottom: 64%; width: 14vw;">
+  <!-- Phase 4: SVG(1306,389) → left:68%, bottom:64% -->
+  <div class="milestone" style="left: 64.5%; bottom: 64%; width: 14vw;">
     <div class="ms-card">
       <div class="ms-phase purple">Phase 4</div>
       <div class="ms-title">Core<br>Business Hours</div>
@@ -478,8 +492,8 @@
     <div class="ms-dot purple"></div>
   </div>
 
-  <!-- Summit: End State -->
-  <div class="milestone" style="left: 80%; bottom: 72%; width: 15vw;">
+  <!-- Summit: SVG(1594,302) → left:83%, bottom:72% -->
+  <div class="milestone" style="left: 79.5%; bottom: 72%; width: 15vw;">
     <div class="ms-card">
       <div class="ms-phase white">The Summit</div>
       <div class="ms-title" style="font-size: 2.8vh;">1.9 FTE<br>Reclaimed</div>
